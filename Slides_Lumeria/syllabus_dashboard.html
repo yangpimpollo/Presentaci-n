@@ -1,0 +1,2115 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="dark">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Lumeria & Learnex — Dashboard Académico</title>
+  <meta name="description" content="Dashboard de rendimiento académico con análisis por examen, cobertura de temas y velocidad de resolución.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+
+  <style>
+    /* ═══════════════════════════════════════════════
+       DESIGN TOKENS
+    ═══════════════════════════════════════════════ */
+    :root {
+      --ease-out: cubic-bezier(0.16, 1, 0.3, 1);
+      --ease-in:  cubic-bezier(0.7, 0, 0.84, 0);
+      --dur-micro: 150ms;
+      --dur-fast: 250ms;
+      --dur-med: 380ms;
+
+      --r-sm: 8px;
+      --r-md: 14px;
+      --r-lg: 20px;
+      --r-xl: 28px;
+      --r-full: 9999px;
+
+      --font-title: 'Outfit', sans-serif;
+      --font-body:  'Plus Jakarta Sans', sans-serif;
+
+      /* Semánticos de datos */
+      --heat-excellent: #00f5d4;
+      --heat-good:      #70e000;
+      --heat-average:   #fee440;
+      --heat-low:       #ff7000;
+      --heat-poor:      #ff0054;
+
+      --primary:   #9d4edd;
+      --secondary: #3f37c9;
+      --cyan:      #00f5d4;
+    }
+
+    [data-theme="dark"] {
+      --bg:         #06030f;
+      --bg2:        #0d0720;
+      --surface:    rgba(255,255,255,0.055);
+      --surface-h:  rgba(255,255,255,0.09);
+      --border:     rgba(255,255,255,0.09);
+      --border-h:   rgba(255,255,255,0.22);
+      --text-1:     #f2eeff;
+      --text-2:     #a8a4c0;
+      --text-3:     #908ca8;
+      --header-bg:  rgba(6,3,15,0.92);
+      --tooltip-bg: #100c22;
+      --card-sh:    0 12px 40px rgba(0,0,0,0.5);
+      --glow-p:     rgba(157,78,221,0.4);
+      --glow-c:     rgba(0,245,212,0.3);
+      --amb1:       rgba(157,78,221,0.12);
+      --amb2:       rgba(63,55,201,0.08);
+      --select-bg:  rgba(255,255,255,0.07);
+      --inp-border: rgba(255,255,255,0.12);
+      --scrim:      rgba(0,0,0,0.7);
+    }
+
+    [data-theme="light"] {
+      --bg:         #f0eeff;
+      --bg2:        #e8e2ff;
+      --surface:    rgba(255,255,255,0.92);
+      --surface-h:  rgba(255,255,255,1);
+      --border:     rgba(100,80,190,0.18);
+      --border-h:   rgba(100,80,190,0.35);
+      --text-1:     #120e2e;
+      --text-2:     #4a4668;
+      --text-3:     #6d6988;
+      --header-bg:  rgba(240,238,255,0.95);
+      --tooltip-bg: #fff;
+      --card-sh:    0 8px 28px rgba(80,60,160,0.15);
+      --glow-p:     rgba(120,70,200,0.2);
+      --glow-c:     rgba(0,180,140,0.2);
+      --amb1:       rgba(157,78,221,0.07);
+      --amb2:       rgba(63,55,201,0.04);
+      --select-bg:  rgba(255,255,255,0.95);
+      --inp-border: rgba(100,80,190,0.25);
+      --scrim:      rgba(0,0,0,0.45);
+    }
+
+    /* ═══════════════════════════════════════════════
+       RESET
+    ═══════════════════════════════════════════════ */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg);
+      color: var(--text-1);
+      min-height: 100vh;
+      overflow-x: hidden;
+      transition: background var(--dur-med) ease, color var(--dur-med) ease;
+    }
+
+    /* ─── SKIP LINK (a11y) ─── */
+    .skip-link {
+      position: absolute; top: -100%; left: 16px; z-index: 10000;
+      background: var(--primary); color: #fff;
+      font-family: var(--font-title); font-weight: 700; font-size: 0.85rem;
+      padding: 10px 20px; border-radius: 0 0 var(--r-sm) var(--r-sm);
+      text-decoration: none;
+      transition: top var(--dur-fast) var(--ease-out);
+    }
+    .skip-link:focus {
+      top: 0; outline: 3px solid var(--cyan); outline-offset: 2px;
+    }
+
+    /* ─── FOCUS VISIBLE ─── */
+    :focus-visible {
+      outline: 3px solid var(--primary);
+      outline-offset: 2px;
+      border-radius: var(--r-sm);
+    }
+    button:focus-visible, a:focus-visible {
+      outline: 3px solid var(--cyan);
+      outline-offset: 2px;
+    }
+
+    /* ─── SKELETON SHIMMER ─── */
+    .skeleton {
+      background: var(--surface);
+      border-radius: var(--r-md);
+      position: relative;
+      overflow: hidden;
+    }
+    .skeleton::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(255,255,255,0.04) 40%,
+        rgba(255,255,255,0.08) 50%,
+        rgba(255,255,255,0.04) 60%,
+        transparent 100%
+      );
+      animation: shimmer 1.8s ease-in-out infinite;
+    }
+    [data-theme="light"] .skeleton::after {
+      background: linear-gradient(
+        90deg,
+        transparent 0%,
+        rgba(0,0,0,0.03) 40%,
+        rgba(0,0,0,0.06) 50%,
+        rgba(0,0,0,0.03) 60%,
+        transparent 100%
+      );
+    }
+    @keyframes shimmer {
+      0% { transform: translateX(-100%); }
+      100% { transform: translateX(100%); }
+    }
+    .skeleton-text {
+      height: 14px; border-radius: 7px;
+      background: var(--border);
+    }
+    .skeleton-text.lg { height: 22px; width: 60%; }
+    .skeleton-circle {
+      width: 110px; height: 110px; border-radius: 50%;
+      background: var(--border);
+    }
+
+    /* ─── ANIMATED BG ─── */
+    .bg-canvas {
+      position: fixed; inset: 0; z-index: 0;
+      background: linear-gradient(135deg, var(--bg) 0%, var(--bg2) 50%, var(--bg) 100%);
+      transition: background var(--dur-med) ease;
+    }
+    .bg-orb {
+      position: fixed; border-radius: 50%; pointer-events: none; z-index: 0;
+      filter: blur(60px);
+    }
+    .bg-orb-1 {
+      width: 55vw; height: 55vw;
+      top: -15%; left: -10%;
+      background: radial-gradient(circle, var(--amb1), transparent 70%);
+      animation: orbFloat 18s ease-in-out infinite alternate;
+    }
+    .bg-orb-2 {
+      width: 65vw; height: 65vw;
+      bottom: -20%; right: -15%;
+      background: radial-gradient(circle, var(--amb2), transparent 70%);
+      animation: orbFloat 24s ease-in-out infinite alternate-reverse;
+    }
+    @keyframes orbFloat {
+      0%   { transform: translate(0,0) scale(1); }
+      100% { transform: translate(3%,4%) scale(1.08); }
+    }
+
+    /* ═══════════════════════════════════════════════
+       HEADER
+    ═══════════════════════════════════════════════ */
+    header {
+      position: sticky; top: 0; z-index: 200;
+      background: var(--header-bg);
+      border-bottom: 1px solid var(--border);
+      backdrop-filter: blur(20px) saturate(180%);
+      -webkit-backdrop-filter: blur(20px) saturate(180%);
+      transition: background var(--dur-med) ease, border-color var(--dur-med) ease;
+    }
+
+    .header-inner {
+      max-width: 1440px; margin: 0 auto;
+      padding: 14px 32px;
+      display: flex; align-items: center; gap: 18px; flex-wrap: wrap;
+    }
+
+    .logo-title {
+      font-family: var(--font-title);
+      font-size: 1.55rem; font-weight: 900; letter-spacing: -0.5px;
+      background: linear-gradient(100deg, var(--text-1) 0%, var(--primary) 100%);
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+      background-clip: text; line-height: 1;
+    }
+    .logo-sub {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1.5px; color: var(--text-3); margin-top: 3px;
+    }
+
+    /* Student badge */
+    .student-badge {
+      display: flex; align-items: center; gap: 12px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-full); padding: 6px 16px 6px 6px;
+      backdrop-filter: blur(10px);
+      transition: border-color var(--dur-fast) ease;
+    }
+    .student-badge:hover { border-color: var(--border-h); }
+    .stu-avatar {
+      width: 36px; height: 36px; border-radius: 50%;
+      background: linear-gradient(135deg, var(--primary), var(--secondary));
+      display: flex; align-items: center; justify-content: center;
+      font-family: var(--font-title); font-weight: 800; font-size: 0.88rem; color: #fff;
+      flex-shrink: 0;
+    }
+    .stu-name  { font-family: var(--font-title); font-weight: 700; font-size: 0.88rem; color: var(--text-1); line-height: 1.1; }
+    .stu-cycle { font-size: 0.68rem; color: var(--primary); font-weight: 600; }
+
+    .h-spacer { flex: 1; }
+
+    /* Botones header */
+    .hdr-actions { display: flex; align-items: center; gap: 8px; }
+
+    .btn {
+      display: inline-flex; align-items: center; gap: 6px;
+      padding: 8px 16px; border-radius: var(--r-full);
+      font-family: var(--font-title); font-weight: 700; font-size: 0.8rem;
+      cursor: pointer; border: 1px solid var(--border);
+      background: var(--surface); color: var(--text-1);
+      text-decoration: none; white-space: nowrap;
+      transition: all var(--dur-fast) var(--ease-out);
+      touch-action: manipulation;
+    }
+    .btn:hover {
+      background: var(--primary); border-color: var(--primary); color: #fff;
+      box-shadow: 0 0 18px var(--glow-p); transform: translateY(-1px);
+    }
+    .btn:active { transform: scale(0.97); }
+
+    .btn-ghost {
+      background: transparent; border-color: transparent; color: var(--text-2);
+    }
+    .btn-ghost:hover { background: var(--surface); border-color: var(--border); color: var(--text-1); box-shadow: none; }
+
+    .btn-icon {
+      width: 40px; height: 40px; padding: 0;
+      border-radius: 50%; font-size: 1.1rem;
+      display: flex; align-items: center; justify-content: center;
+    }
+    .btn-icon:hover { transform: rotate(12deg) scale(1.06); }
+
+    /* ═══════════════════════════════════════════════
+       LAYOUT
+    ═══════════════════════════════════════════════ */
+    main {
+      position: relative; z-index: 10;
+      max-width: 1440px; margin: 0 auto;
+      padding: 32px 32px 80px;
+    }
+
+    /* ═══════════════════════════════════════════════
+       SCROLL REVEAL
+    ═══════════════════════════════════════════════ */
+    .reveal {
+      opacity: 0; transform: translateY(24px);
+      transition: opacity var(--dur-med) var(--ease-out), transform var(--dur-med) var(--ease-out);
+    }
+    .reveal.visible { opacity: 1; transform: translateY(0); }
+    .reveal-d1 { transition-delay: 60ms; }
+    .reveal-d2 { transition-delay: 120ms; }
+    .reveal-d3 { transition-delay: 180ms; }
+    .reveal-d4 { transition-delay: 240ms; }
+    .reveal-d5 { transition-delay: 300ms; }
+
+    /* ═══════════════════════════════════════════════
+       HERO — STUDENT OVERVIEW
+    ═══════════════════════════════════════════════ */
+    .hero {
+      display: grid;
+      grid-template-columns: 1fr auto;
+      gap: 24px;
+      align-items: center;
+      margin-bottom: 36px;
+      padding: 32px 36px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-xl);
+      backdrop-filter: blur(16px);
+      position: relative;
+      overflow: hidden;
+    }
+    .hero::before {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(135deg, rgba(157,78,221,0.08) 0%, rgba(63,55,201,0.04) 100%);
+      pointer-events: none;
+    }
+    .hero-text { position: relative; z-index: 1; }
+    .hero-greeting {
+      font-size: 0.78rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 2px; color: var(--primary); margin-bottom: 8px;
+    }
+    .hero-name {
+      font-family: var(--font-title); font-size: 2.4rem; font-weight: 900;
+      line-height: 1.1; letter-spacing: -1px; color: var(--text-1);
+    }
+    .hero-name em {
+      font-style: normal;
+      background: linear-gradient(90deg, var(--primary), var(--cyan));
+      -webkit-background-clip: text; -webkit-text-fill-color: transparent; background-clip: text;
+    }
+    .hero-meta {
+      display: flex; gap: 20px; flex-wrap: wrap; margin-top: 14px;
+    }
+    .hero-chip {
+      display: flex; align-items: center; gap: 6px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-full); padding: 5px 14px;
+      font-size: 0.78rem; font-weight: 600; color: var(--text-2);
+    }
+    .hero-chip svg { width: 14px; height: 14px; flex-shrink: 0; }
+
+    /* Precision donut */
+    .hero-donut {
+      position: relative; z-index: 1;
+      display: flex; flex-direction: column; align-items: center; gap: 8px;
+    }
+    .donut-svg { width: 110px; height: 110px; transform: rotate(-90deg); }
+    .donut-track { fill: none; stroke: var(--border); stroke-width: 10; }
+    .donut-fill {
+      fill: none; stroke-width: 10;
+      stroke-linecap: round;
+      stroke-dasharray: 283;
+      stroke-dashoffset: 283;
+      transition: stroke-dashoffset 1.2s var(--ease-out);
+    }
+    .donut-center {
+      position: absolute; top: 50%; left: 50%;
+      transform: translate(-50%, -50%);
+      text-align: center; pointer-events: none;
+    }
+    .donut-pct {
+      font-family: var(--font-title); font-size: 1.35rem; font-weight: 900; color: var(--text-1);
+      display: block; line-height: 1;
+    }
+    .donut-lbl { font-size: 0.65rem; font-weight: 700; color: var(--text-3); text-transform: uppercase; letter-spacing: 0.5px; }
+
+    /* ═══════════════════════════════════════════════
+       FILTER BAR
+    ═══════════════════════════════════════════════ */
+    .filter-bar {
+      display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 14px 22px;
+      margin-bottom: 28px; backdrop-filter: blur(12px);
+      transition: border-color var(--dur-fast) ease;
+    }
+    .filter-bar:focus-within { border-color: var(--border-h); }
+
+    .pill-tabs {
+      display: flex; gap: 4px;
+      background: rgba(0,0,0,0.12); border-radius: var(--r-full); padding: 4px;
+    }
+    [data-theme="light"] .pill-tabs { background: rgba(0,0,0,0.06); }
+
+    .pill-tab {
+      padding: 7px 18px; border-radius: var(--r-full); border: none;
+      background: transparent; color: var(--text-2);
+      font-family: var(--font-title); font-weight: 700; font-size: 0.82rem;
+      cursor: pointer; transition: all var(--dur-fast) var(--ease-out);
+      white-space: nowrap; touch-action: manipulation;
+    }
+    .pill-tab.active {
+      background: var(--primary); color: #fff;
+      box-shadow: 0 2px 12px var(--glow-p);
+    }
+    .pill-tab:not(.active):hover { color: var(--text-1); background: var(--surface-h); }
+
+    .week-sel {
+      background: var(--select-bg); border: 1px solid var(--inp-border);
+      border-radius: var(--r-sm); padding: 8px 12px;
+      color: var(--text-1); font-family: var(--font-title); font-weight: 600; font-size: 0.85rem;
+      outline: none; cursor: pointer;
+      transition: border-color var(--dur-fast) ease, opacity var(--dur-fast) ease, max-width var(--dur-fast) ease, padding var(--dur-fast) ease;
+      max-width: 200px;
+      overflow: hidden;
+    }
+    .week-sel.hidden {
+      opacity: 0; max-width: 0; padding: 8px 0; border-color: transparent;
+      pointer-events: none;
+    }
+    .week-sel:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--glow-p); }
+
+    /* Week range */
+    .week-range {
+      display: flex; align-items: center; gap: 8px;
+      transition: opacity var(--dur-fast) ease, max-width var(--dur-fast) ease;
+      max-width: 500px; overflow: hidden;
+    }
+    .week-range.hidden {
+      opacity: 0; max-width: 0; pointer-events: none;
+    }
+    .week-range-sep {
+      font-family: var(--font-title); font-weight: 700; font-size: 0.82rem;
+      color: var(--text-3);
+    }
+    .week-range-label {
+      font-size: 0.72rem; font-weight: 600; color: var(--primary);
+      white-space: nowrap; margin-left: 4px;
+    }
+    .week-sel:focus { border-color: var(--primary); box-shadow: 0 0 0 3px var(--glow-p); }
+
+    .filter-badge {
+      margin-left: auto; display: flex; align-items: center; gap: 8px;
+      font-size: 0.75rem; color: var(--text-3); font-weight: 600;
+    }
+    .badge-dot {
+      width: 7px; height: 7px; border-radius: 50%;
+      background: var(--cyan); box-shadow: 0 0 6px var(--glow-c);
+      animation: pulse 2s ease-in-out infinite;
+    }
+    @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+    /* Week type filter */
+    .week-type-filter {
+      display: flex; gap: 4px;
+      margin-left: auto;
+    }
+    .week-type-pill {
+      padding: 5px 12px; border-radius: var(--r-full); border: none;
+      background: transparent; color: var(--text-2);
+      font-family: var(--font-title); font-weight: 600; font-size: 0.75rem;
+      cursor: pointer; transition: all var(--dur-fast) var(--ease-out);
+      white-space: nowrap; touch-action: manipulation;
+    }
+    .week-type-pill.active {
+      background: var(--primary); color: #fff;
+      box-shadow: 0 2px 12px var(--glow-p);
+    }
+    .week-type-pill:not(.active):hover { color: var(--text-1); background: var(--surface-h); }
+
+    /* ═══════════════════════════════════════════════
+       MÉTRICAS GRID
+    ═══════════════════════════════════════════════ */
+    .metrics-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 14px;
+      margin-bottom: 28px;
+    }
+
+    .m-card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--r-lg);
+      padding: 20px 18px 16px;
+      backdrop-filter: blur(12px);
+      position: relative; overflow: hidden;
+      transition: border-color var(--dur-fast) ease, transform var(--dur-fast) var(--ease-out), box-shadow var(--dur-fast) ease;
+      cursor: default;
+    }
+    .m-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: linear-gradient(135deg, var(--m-accent, var(--primary)) 0%, transparent 65%);
+      opacity: 0; transition: opacity var(--dur-fast) ease;
+    }
+    .m-card:hover { border-color: var(--m-accent, var(--border-h)); transform: translateY(-3px); box-shadow: var(--card-sh); }
+    .m-card:hover::before { opacity: 0.07; }
+
+    .m-card-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 12px; position: relative; z-index: 1;
+    }
+    .m-label {
+      font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+      letter-spacing: 1px; color: var(--text-3); line-height: 1.3;
+    }
+    .m-icon {
+      width: 32px; height: 32px; border-radius: var(--r-sm);
+      background: color-mix(in srgb, var(--m-accent, var(--primary)) 15%, transparent);
+      display: flex; align-items: center; justify-content: center;
+      flex-shrink: 0;
+    }
+    .m-icon svg { width: 16px; height: 16px; }
+
+    .m-value {
+      font-family: var(--font-title); font-size: 2rem; font-weight: 900;
+      color: var(--m-accent, var(--text-1)); line-height: 1;
+      letter-spacing: -1px; position: relative; z-index: 1;
+    }
+    .m-sub {
+      font-size: 0.7rem; color: var(--text-3); font-weight: 500;
+      margin-top: 5px; position: relative; z-index: 1;
+    }
+
+    /* Mini progress bar */
+    .m-bar {
+      height: 3px; background: var(--border); border-radius: 3px;
+      margin-top: 10px; overflow: hidden; position: relative; z-index: 1;
+    }
+    .m-bar-fill {
+      height: 100%; background: var(--m-accent, var(--primary));
+      border-radius: 3px; width: 0;
+      transition: width 0.8s var(--ease-out);
+    }
+
+    /* ═══════════════════════════════════════════════
+       HEATMAP CARD
+    ═══════════════════════════════════════════════ */
+    .heatmap-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-xl); padding: 28px 30px;
+      backdrop-filter: blur(14px); box-shadow: var(--card-sh);
+    }
+
+    .heatmap-card-head {
+      display: flex; align-items: flex-start; gap: 16px;
+      margin-bottom: 22px; flex-wrap: wrap;
+    }
+    .hm-title-group { flex: 1; min-width: 200px; }
+    .hm-title {
+      font-family: var(--font-title); font-size: 1.3rem; font-weight: 800; color: var(--text-1);
+    }
+    .hm-sub { font-size: 0.76rem; color: var(--text-2); margin-top: 4px; }
+
+    /* Breadcrumb */
+    .breadcrumb {
+      display: flex; align-items: center; gap: 6px;
+      margin-bottom: 16px; flex-wrap: wrap;
+    }
+    .crumb {
+      font-family: var(--font-title); font-weight: 700; font-size: 0.85rem;
+      color: var(--primary); cursor: pointer; border: none; background: none; padding: 0;
+      transition: color var(--dur-micro) ease;
+    }
+    .crumb:hover { color: var(--text-1); }
+    .crumb-sep { color: var(--text-3); font-size: 0.8rem; }
+    .crumb-active {
+      font-family: var(--font-title); font-weight: 700; font-size: 0.85rem; color: var(--text-1);
+    }
+
+    /* Leyenda */
+    .legend { display: flex; flex-wrap: wrap; gap: 7px; }
+    .leg-pill {
+      display: inline-flex; align-items: center; gap: 5px;
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-full); padding: 4px 11px;
+      font-size: 0.7rem; font-weight: 700; color: var(--text-2);
+      white-space: nowrap;
+      transition: border-color var(--dur-micro) ease, color var(--dur-micro) ease;
+      cursor: default;
+    }
+    .leg-pill:hover { border-color: var(--lpill-c); color: var(--lpill-c); }
+    .leg-dot {
+      width: 8px; height: 8px; border-radius: 50%;
+      background: var(--lpill-c);
+      box-shadow: 0 0 5px var(--lpill-c);
+      flex-shrink: 0;
+    }
+
+    /* Divider */
+    .divider { height: 1px; background: var(--border); margin: 20px 0; }
+
+    /* ═══════════════════════════════════════════════
+       HEATMAP GRID & CELLS
+    ═══════════════════════════════════════════════ */
+    .hm-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+
+    .hm-cell {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 20px 18px 16px;
+      cursor: pointer; position: relative; overflow: hidden;
+      min-height: 132px; display: flex; flex-direction: column; justify-content: space-between;
+      /* Scroll reveal per-cell */
+      opacity: 0; transform: translateY(14px) scale(0.98);
+      transition:
+        opacity var(--dur-fast) var(--ease-out),
+        transform var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) ease,
+        box-shadow var(--dur-fast) ease;
+      touch-action: manipulation;
+    }
+    .hm-cell.visible { opacity: 1; transform: translateY(0) scale(1); }
+
+    /* Barra inferior de calor */
+    .hm-cell::after {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 100%; height: 4px;
+      background: var(--cc, var(--heat-poor));
+      transition: height var(--dur-fast) ease;
+    }
+    /* Glow interior en hover */
+    .hm-cell::before {
+      content: ''; position: absolute; inset: 0;
+      background: var(--cc, var(--heat-poor));
+      opacity: 0; transition: opacity var(--dur-fast) ease;
+    }
+    .hm-cell:hover::before { opacity: 0.05; }
+    .hm-cell:hover::after  { height: 6px; }
+    .hm-cell:hover {
+      border-color: var(--cc, var(--heat-poor));
+      box-shadow: 0 6px 22px rgba(0,0,0,0.2), 0 0 0 1px var(--cc, transparent);
+      transform: translateY(-3px) scale(1.01);
+    }
+    .hm-cell:active { transform: scale(0.97); }
+    .hm-cell[data-leaf] { cursor: default; }
+    .hm-cell[data-leaf]:hover { transform: translateY(-2px); }
+
+    .cell-z { position: relative; z-index: 1; }
+    .cell-name {
+      font-family: var(--font-title); font-weight: 700; font-size: 1rem;
+      color: var(--text-1); line-height: 1.25;
+    }
+    .cell-bottom {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-top: 10px;
+    }
+    .cell-sub { font-size: 0.7rem; color: var(--text-3); font-weight: 500; }
+    .cell-pct {
+      font-family: var(--font-title); font-size: 1.55rem; font-weight: 900;
+      color: var(--cc, var(--heat-poor)); line-height: 1;
+    }
+
+    /* Mini bar inside cell */
+    .cell-prog { height: 3px; background: var(--border); border-radius: 3px; margin-top: 7px; overflow: hidden; }
+    .cell-prog-fill {
+      height: 100%; background: var(--cc, var(--heat-poor));
+      border-radius: 3px; width: 0; transition: width 0.7s var(--ease-out);
+    }
+
+    /* Group headers for performance tiers */
+    .hm-group-header {
+      grid-column: 1 / -1; display: flex; align-items: center;
+      gap: 10px; padding: 10px 0 2px; margin-top: 8px;
+    }
+    .hm-group-header:first-of-type { margin-top: 0; }
+    .hm-group-dot {
+      width: 10px; height: 10px; border-radius: 50%;
+      background: var(--group-color, var(--heat-good));
+      box-shadow: 0 0 8px var(--group-color, transparent);
+    }
+    .hm-group-label {
+      font-family: var(--font-title); font-weight: 800; font-size: 0.88rem;
+      color: var(--text-1); text-transform: uppercase; letter-spacing: 0.04em;
+    }
+    .hm-group-count {
+      font-size: 0.72rem; font-weight: 600; color: var(--text-3);
+      background: var(--surface-h); padding: 2px 10px; border-radius: var(--r-full);
+    }
+
+    /* Category cards for group-level navigation */
+    .hm-category {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-lg); padding: 26px 20px; cursor: pointer;
+      position: relative; overflow: hidden; min-height: 132px;
+      display: flex; flex-direction: column; justify-content: space-between;
+      opacity: 0; transform: translateY(14px) scale(0.98);
+      transition:
+        opacity var(--dur-fast) var(--ease-out),
+        transform var(--dur-fast) var(--ease-out),
+        border-color var(--dur-fast) ease,
+        box-shadow var(--dur-fast) ease;
+      touch-action: manipulation;
+    }
+    .hm-category.visible { opacity: 1; transform: translateY(0) scale(1); }
+    .hm-category::after {
+      content: ''; position: absolute; bottom: 0; left: 0;
+      width: 100%; height: 5px;
+      background: var(--cc, var(--heat-poor));
+      transition: height var(--dur-fast) ease;
+    }
+    .hm-category::before {
+      content: ''; position: absolute; inset: 0;
+      background: var(--cc, var(--heat-poor));
+      opacity: 0; transition: opacity var(--dur-fast) ease;
+    }
+    .hm-category:hover::before { opacity: 0.04; }
+    .hm-category:hover::after { height: 7px; }
+    .hm-category:hover {
+      border-color: var(--cc, var(--heat-poor));
+      box-shadow: 0 6px 22px rgba(0,0,0,0.2), 0 0 0 1px var(--cc, transparent);
+      transform: translateY(-3px) scale(1.01);
+    }
+    .hm-category:active { transform: scale(0.97); }
+    .cat-icon {
+      width: 48px; height: 48px; border-radius: var(--r-md);
+      display: flex; align-items: center; justify-content: center;
+      background: var(--surface-h); font-size: 1.5rem; margin-bottom: 8px;
+    }
+    .cat-name {
+      font-family: var(--font-title); font-weight: 800; font-size: 1.2rem;
+      color: var(--text-1); line-height: 1.25;
+    }
+    .cat-sub {
+      font-size: 0.75rem; color: var(--text-3); font-weight: 500;
+      margin-top: 4px;
+    }
+    .cat-bottom {
+      display: flex; justify-content: space-between; align-items: flex-end;
+      margin-top: 12px;
+    }
+    .cat-count {
+      font-size: 0.72rem; font-weight: 600; color: var(--text-3);
+    }
+    .cat-pct {
+      font-family: var(--font-title); font-size: 1.7rem; font-weight: 900;
+      color: var(--cc, var(--heat-poor)); line-height: 1;
+    }
+    @media (max-width: 768px) {
+      .hm-category { padding: 20px 16px; min-height: 110px; }
+      .cat-icon { width: 40px; height: 40px; font-size: 1.2rem; }
+      .cat-name { font-size: 1rem; }
+      .cat-pct { font-size: 1.3rem; }
+    }
+
+    /* ═══════════════════════════════════════════════
+       TEMAS CRÍTICOS
+    ═══════════════════════════════════════════════ */
+    .criticos-section {
+      margin-bottom: 28px;
+    }
+    .criticos-header {
+      display: flex; align-items: center; gap: 10px;
+      margin-bottom: 14px;
+    }
+    .criticos-header h3 {
+      font-family: var(--font-title); font-weight: 800; font-size: 1rem;
+      color: var(--text-1); margin: 0;
+    }
+    .criticos-count {
+      font-size: 0.72rem; font-weight: 600; color: var(--text-3);
+      background: var(--surface-h); padding: 2px 10px; border-radius: var(--r-full);
+    }
+    .criticos-grid {
+      display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+      gap: 12px;
+    }
+    .critico-card {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 16px 18px;
+      cursor: pointer; position: relative; overflow: hidden;
+      transition: all var(--dur-fast) var(--ease-out);
+      touch-action: manipulation;
+    }
+    .critico-card:hover {
+      border-color: var(--cc, var(--heat-poor));
+      box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+      transform: translateY(-2px);
+    }
+    .critico-card::before {
+      content: ''; position: absolute; top: 0; left: 0;
+      width: 4px; height: 100%;
+      background: var(--cc, var(--heat-poor));
+    }
+    .critico-top {
+      display: flex; justify-content: space-between; align-items: flex-start;
+      margin-bottom: 8px;
+    }
+    .critico-tema {
+      font-family: var(--font-title); font-weight: 700; font-size: 0.88rem;
+      color: var(--text-1); line-height: 1.3;
+    }
+    .critico-pct {
+      font-family: var(--font-title); font-size: 1.1rem; font-weight: 900;
+      color: var(--cc, var(--heat-poor));
+    }
+    .critico-meta {
+      font-size: 0.72rem; color: var(--text-3); font-weight: 500;
+    }
+    .critico-bar {
+      height: 3px; background: var(--border); border-radius: 3px;
+      margin-top: 10px; overflow: hidden;
+    }
+    .critico-bar-fill {
+      height: 100%; background: var(--cc, var(--heat-poor));
+      border-radius: 3px; transition: width 0.7s var(--ease-out);
+    }
+
+    /* ═══════════════════════════════════════════════
+       HEATMAP SEMANA × CURSO
+    ═══════════════════════════════════════════════ */
+    .heatmap-week-course {
+      margin-bottom: 28px;
+    }
+    .heatmap-week-course h3 {
+      font-family: var(--font-title); font-weight: 800; font-size: 1rem;
+      color: var(--text-1); margin: 0 0 14px;
+    }
+    .week-course-table {
+      width: 100%; border-collapse: collapse;
+      font-size: 0.78rem;
+    }
+    .week-course-table th {
+      font-family: var(--font-title); font-weight: 700;
+      color: var(--text-2); padding: 8px 10px;
+      text-align: left; border-bottom: 1px solid var(--border);
+      position: sticky; top: 0; background: var(--surface);
+    }
+    .week-course-table td {
+      padding: 6px 8px; text-align: center;
+      border-bottom: 1px solid var(--border);
+    }
+    .week-course-table .week-label {
+      font-weight: 700; color: var(--text-1); text-align: left;
+      white-space: nowrap;
+    }
+    .week-course-table .week-label .week-type-badge {
+      display: inline-block; width: 8px; height: 8px;
+      border-radius: 50%; margin-left: 6px;
+      vertical-align: middle;
+    }
+    .week-course-table .week-type-badge.avance { background: var(--heat-good); }
+    .week-course-table .week-type-badge.feedback { background: var(--primary); }
+    .week-cell {
+      cursor: pointer; border-radius: 4px;
+      transition: all var(--dur-fast) ease;
+      font-weight: 700; font-family: var(--font-title);
+    }
+    .week-cell:hover {
+      transform: scale(1.1); box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+    }
+    .week-cell.na { color: var(--text-3); font-weight: 400; }
+
+    /* ═══════════════════════════════════════════════
+       TOOLTIP PREMIUM
+    ═══════════════════════════════════════════════ */
+    #tooltip {
+      position: fixed; z-index: 9999; pointer-events: none;
+      background: var(--tooltip-bg); border: 1px solid var(--border-h);
+      border-radius: var(--r-md); padding: 14px 18px;
+      font-size: 0.77rem; color: var(--text-1);
+      box-shadow: 0 16px 40px rgba(0,0,0,0.5);
+      min-width: 190px; display: none;
+      opacity: 0;
+      transition: background var(--dur-fast) ease, opacity var(--dur-fast) var(--ease-out);
+    }
+    #tooltip.show { display: block; opacity: 1; }
+    #tooltip h4 {
+      font-family: var(--font-title); font-size: 0.88rem; font-weight: 800;
+      margin-bottom: 10px; color: var(--text-1);
+    }
+    .tt-row {
+      display: flex; justify-content: space-between; align-items: center; gap: 14px;
+      padding: 3px 0; border-bottom: 1px solid var(--border);
+    }
+    .tt-row:last-child { border-bottom: none; }
+    .tt-label { color: var(--text-2); font-weight: 600; }
+    .tt-val   { font-weight: 800; font-family: var(--font-title); }
+
+    /* ═══════════════════════════════════════════════
+       LOADING
+    ═══════════════════════════════════════════════ */
+    .loading {
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      min-height: 260px; gap: 14px;
+    }
+    .spinner {
+      width: 36px; height: 36px; border: 3px solid var(--border);
+      border-top-color: var(--primary); border-radius: 50%;
+      animation: spin 0.8s linear infinite;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Skeleton loading grid */
+    .skeleton-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 14px;
+    }
+    .skeleton-cell {
+      background: var(--surface); border: 1px solid var(--border);
+      border-radius: var(--r-md); padding: 20px 18px 16px;
+      min-height: 132px; position: relative; overflow: hidden;
+    }
+    .skeleton-cell::after {
+      content: '';
+      position: absolute; inset: 0;
+      background: linear-gradient(90deg, transparent 0%, rgba(255,255,255,0.04) 40%, rgba(255,255,255,0.08) 50%, rgba(255,255,255,0.04) 60%, transparent 100%);
+      animation: shimmer 1.8s ease-in-out infinite;
+    }
+
+    /* Empty state */
+    .empty-state {
+      text-align: center; padding: 60px 20px; color: var(--text-3);
+    }
+    .empty-state-icon { font-size: 3rem; margin-bottom: 12px; opacity: 0.5; }
+    .empty-state-text { font-size: 0.9rem; font-weight: 500; }
+
+    /* ═══════════════════════════════════════════════
+       RESPONSIVE
+    ═══════════════════════════════════════════════ */
+    @media (max-width: 900px) {
+      .hero { grid-template-columns: 1fr; }
+      .hero-donut { display: none; }
+      .metrics-grid { grid-template-columns: repeat(3, 1fr); }
+    }
+    @media (max-width: 768px) {
+      .header-inner { padding: 12px 16px; gap: 8px; }
+      .logo-title { font-size: 1.25rem; }
+      .student-badge .stu-name,
+      .student-badge .stu-cycle { display: none; }
+      .student-badge { padding: 4px; border-radius: 50%; }
+      main { padding: 18px 16px 60px; }
+      .hero { padding: 22px 20px; }
+      .hero-name { font-size: 1.75rem; }
+      .metrics-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .m-value { font-size: 1.6rem; }
+      .filter-bar { gap: 8px; padding: 12px 14px; }
+      .filter-badge { display: none; }
+      .heatmap-card { padding: 18px 16px; }
+      .hm-grid { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+      .heatmap-card-head { flex-direction: column; gap: 12px; }
+    }
+    @media (max-width: 480px) {
+      .metrics-grid { grid-template-columns: 1fr 1fr; }
+      .hm-grid { grid-template-columns: 1fr; }
+      .pill-tabs { width: 100%; }
+      .pill-tab { flex: 1; text-align: center; padding: 7px 10px; font-size: 0.75rem; }
+      .week-range { flex-wrap: wrap; }
+      .week-sel { max-width: 100px; font-size: 0.78rem; padding: 6px 8px; }
+    }
+
+    /* prefers-reduced-motion */
+    @media (prefers-reduced-motion: reduce) {
+      .reveal, .hm-cell, .bg-orb-1, .bg-orb-2 {
+        animation: none !important; transition: none !important;
+        opacity: 1 !important; transform: none !important;
+      }
+      .skeleton-cell::after, .skeleton::after { animation: none !important; }
+    }
+  </style>
+</head>
+<body>
+
+  <div class="bg-canvas"></div>
+  <div class="bg-orb bg-orb-1"></div>
+  <div class="bg-orb bg-orb-2"></div>
+
+  <a href="#heatmap-container" class="skip-link">Saltar al contenido principal</a>
+
+  <!-- ═══════════ HEADER ═══════════ -->
+  <header>
+    <div class="header-inner">
+      <div>
+        <div class="logo-title">Lumeria &amp; Learnex</div>
+        <div class="logo-sub">Syllabus · Heatmap · Analytics</div>
+      </div>
+
+      <div class="student-badge">
+        <div class="stu-avatar" id="stu-avatar">JV</div>
+        <div>
+          <div class="stu-name"  id="stu-name">Julio Ventura</div>
+          <div class="stu-cycle" id="stu-cycle">Ciclo: Selección &amp; San Marcos 2026</div>
+        </div>
+      </div>
+
+      <div class="h-spacer"></div>
+
+      <div class="hdr-actions">
+        <button class="btn btn-ghost" onclick="descargarSyllabusJSON()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Syllabus
+        </button>
+        <button class="btn btn-ghost" onclick="descargarResultadosJSON()">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+          Resultados
+        </button>
+        <a href="index.html" class="btn btn-ghost">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
+          Diapositivas
+        </a>
+        <button class="btn btn-icon" id="theme-toggle" onclick="toggleTheme()" aria-label="Cambiar tema">
+          <svg id="theme-icon-moon" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>
+          <svg id="theme-icon-sun" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:none"><circle cx="12" cy="12" r="5"/><line x1="12" y1="1" x2="12" y2="3"/><line x1="12" y1="21" x2="12" y2="23"/><line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/><line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/><line x1="1" y1="12" x2="3" y2="12"/><line x1="21" y1="12" x2="23" y2="12"/><line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/><line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- ═══════════ MAIN ═══════════ -->
+  <main>
+
+    <!-- HERO -->
+    <section class="hero reveal" id="hero-section">
+      <div class="hero-text">
+        <div class="hero-greeting">Dashboard Académico</div>
+        <h1 class="hero-name">
+          Hola, <em id="hero-name-em">Julio</em>
+        </h1>
+        <div class="hero-meta" id="hero-meta">
+          <!-- poblado dinámicamente -->
+        </div>
+      </div>
+      <div class="hero-donut">
+        <div style="position:relative; width:110px; height:110px;">
+          <svg class="donut-svg" viewBox="0 0 100 100" aria-label="Precisión general">
+            <circle class="donut-track" cx="50" cy="50" r="45"/>
+            <circle class="donut-fill" id="donut-fill" cx="50" cy="50" r="45" stroke="var(--primary)"/>
+          </svg>
+          <div class="donut-center">
+            <span class="donut-pct" id="donut-pct">–</span>
+            <span class="donut-lbl">Precisión</span>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- FILTER BAR -->
+    <div class="filter-bar reveal reveal-d1">
+      <div class="pill-tabs" role="tablist">
+        <button class="pill-tab active" id="tab-general" role="tab" aria-selected="true"
+          onclick="setVista('general')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M9 9h6M9 12h6M9 15h4"/></svg> Ciclo Completo</button>
+        <button class="pill-tab" id="tab-semana" role="tab" aria-selected="false"
+          onclick="setVista('semana')"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="vertical-align:-2px"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg> Por Semana</button>
+      </div>
+
+      <div class="week-range" id="week-range">
+        <select class="week-sel" id="semana-desde"
+          onchange="cambiarRango()" aria-label="Semana inicio">
+        </select>
+        <span class="week-range-sep">a</span>
+        <select class="week-sel" id="semana-hasta"
+          onchange="cambiarRango()" aria-label="Semana fin">
+        </select>
+        <span class="week-range-label" id="week-range-label"></span>
+      </div>
+
+      <div class="week-type-filter" id="week-type-filter">
+        <button class="week-type-pill active" id="wt-todas" onclick="cambiarTipoSemana('todas')">Todas</button>
+        <button class="week-type-pill" id="wt-avance" onclick="cambiarTipoSemana('avance')">Avance</button>
+        <button class="week-type-pill" id="wt-feedback" onclick="cambiarTipoSemana('feedback')">Feedback</button>
+      </div>
+
+      <div class="filter-badge">
+        <div class="badge-dot"></div>
+        Fichas E (Entrada), I (Intermedia), R (Reforzamiento), S (Salida)
+      </div>
+    </div>
+
+    <!-- TEMAS CRÍTICOS -->
+    <section class="criticos-section reveal reveal-d1" id="criticos-section">
+      <div class="criticos-header">
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="var(--heat-poor)" stroke-width="2.5">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+        <h3>Temas para Reforzar</h3>
+        <span class="criticos-count" id="criticos-count">–</span>
+      </div>
+      <div class="criticos-grid" id="criticos-grid">
+        <!-- poblado dinámicamente -->
+      </div>
+    </section>
+
+    <!-- HEATMAP SEMANA × CURSO -->
+    <section class="heatmap-week-course reveal reveal-d2" id="heatmap-week-course">
+      <h3>Rendimiento por Semana</h3>
+      <div style="overflow-x:auto;">
+        <table class="week-course-table" id="week-course-table">
+          <!-- poblado dinámicamente -->
+        </table>
+      </div>
+    </section>
+
+    <!-- HEATMAP CARD -->
+    <section class="heatmap-card reveal">
+
+      <!-- Breadcrumb -->
+      <nav class="breadcrumb" id="breadcrumb" aria-label="Navegación del mapa de calor"></nav>
+
+      <div class="heatmap-card-head">
+        <div class="hm-title-group">
+          <h2 class="hm-title" id="hm-title">Rendimiento por Cursos</h2>
+          <p class="hm-sub"  id="hm-sub">Haz clic para explorar temas y subtemas</p>
+        </div>
+
+        <!-- Leyenda -->
+        <div class="legend" role="list" aria-label="Leyenda de rendimiento">
+          <div class="leg-pill" style="--lpill-c:var(--heat-excellent)" role="listitem">
+            <div class="leg-dot"></div>Excelente ≥90%
+          </div>
+          <div class="leg-pill" style="--lpill-c:var(--heat-good)" role="listitem">
+            <div class="leg-dot"></div>Seguro 80–89%
+          </div>
+          <div class="leg-pill" style="--lpill-c:var(--heat-average)" role="listitem">
+            <div class="leg-dot"></div>Vulnerable 70–79%
+          </div>
+          <div class="leg-pill" style="--lpill-c:var(--heat-low)" role="listitem">
+            <div class="leg-dot"></div>Bajo 50–69%
+          </div>
+          <div class="leg-pill" style="--lpill-c:var(--heat-poor)" role="listitem">
+            <div class="leg-dot"></div>Crítico &lt;50%
+          </div>
+        </div>
+      </div>
+
+      <div class="divider"></div>
+
+      <div id="heatmap-container" aria-live="polite" role="region" aria-label="Mapa de calor de rendimiento">
+        <div class="skeleton-grid">
+          <div class="skeleton-cell"><div class="skeleton-text lg"></div><div style="margin-top:12px"><div class="skeleton-text" style="width:80%"></div></div></div>
+          <div class="skeleton-cell"><div class="skeleton-text lg"></div><div style="margin-top:12px"><div class="skeleton-text" style="width:65%"></div></div></div>
+          <div class="skeleton-cell"><div class="skeleton-text lg"></div><div style="margin-top:12px"><div class="skeleton-text" style="width:72%"></div></div></div>
+          <div class="skeleton-cell"><div class="skeleton-text lg"></div><div style="margin-top:12px"><div class="skeleton-text" style="width:90%"></div></div></div>
+          <div class="skeleton-cell"><div class="skeleton-text lg"></div><div style="margin-top:12px"><div class="skeleton-text" style="width:55%"></div></div></div>
+          <div class="skeleton-cell"><div class="skeleton-text lg"></div><div style="margin-top:12px"><div class="skeleton-text" style="width:78%"></div></div></div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <div id="tooltip" role="tooltip"></div>
+
+<script>
+    /* ════════════════════════════════════════════════════════
+       CONFIGURACIÓN DEL CICLO
+    ═════════════════════════════════════════════════════════ */
+    const CICLO = {
+      alumno:   'Julio Ventura',
+      initials: 'JV',
+      nombre:   'Selección & San Marcos 2026',
+      semanas:  12,
+      // Preguntas por examen (varía según Consideraciones.md)
+      preguntasPorFicha: { min: 8, max: 25 },
+      fichasPorSemana: 4,
+      // Fichas: E=Entrada, I=Intermedia, R=Reforzamiento, S=Salida
+      tiposFicha: ['E', 'I', 'R', 'S'],
+      // Semanas Feedback (evaluaciones formales)
+      feedbackSemanas: [3, 6, 8, 12]
+    };
+
+    // Grupos de cursos
+    const GRUPOS_CURSOS = {
+      'Números': [
+        'Álgebra','Aritmética','Geometría','Trigonometría','Razonamiento Matemático'
+      ],
+      'Ciencias': [
+        'Física','Química','Biología','Anatomía','Ecología'
+      ],
+      'Letras': [
+        'Lenguaje','Literatura','Razonamiento Verbal'
+      ],
+      'Humanidades': [
+        'Historia del Perú','Historia Universal','Geografía','Economía',
+        'Filosofía','Psicología','Cívica'
+      ]
+    };
+
+    // Helper: obtener grupo de un curso
+    function getGrupoCurso(curso) {
+      for (const [grupo, cursos] of Object.entries(GRUPOS_CURSOS)) {
+        if (cursos.includes(curso)) return grupo;
+      }
+      return 'Otros';
+    }
+
+    // Helper: tipo de semana
+    function getTipoSemana(s) {
+      return CICLO.feedbackSemanas.includes(s) ? 'feedback' : 'avance';
+    }
+
+    // Helper: label de semana con tipo
+    function getSemanaLabel(s) {
+      const tipo = getTipoSemana(s);
+      const badge = tipo === 'feedback' ? ' 🔵' : ' 🟢';
+      return `Sem ${s}${badge}`;
+    }
+
+    const CURSOS = [
+      'Álgebra','Aritmética','Geometría','Trigonometría','Física',
+      'Química','Biología','Anatomía','Lenguaje','Literatura',
+      'Historia del Perú','Historia Universal','Geografía','Economía',
+      'Filosofía','Psicología','Cívica','Razonamiento Matemático',
+      'Razonamiento Verbal','Ecología'
+    ];
+
+    /* ═══════════════════════════════════════════════════════
+       RNG SEMILLADO (Mulberry32 — reproducible)
+    ═══════════════════════════════════════════════════════ */
+    let _rng;
+    function initRng(seed = 0xDEADBEEF) {
+      let s = seed >>> 0;
+      _rng = () => {
+        s += 0x6d2b79f5;
+        let t = Math.imul(s ^ (s >>> 15), 1 | s);
+        t = t + Math.imul(t ^ (t >>> 7), 61 | t) ^ t;
+        return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+      };
+    }
+    const rand  = ()       => _rng();
+    const rInt  = (a, b)   => Math.floor(_rng() * (b - a + 1)) + a;
+    const clamp = (v,a,b)  => Math.max(a, Math.min(b, v));
+
+    /* ═══════════════════════════════════════════════════════
+       PERFILES POR CURSO (distribución diferencial)
+    ═══════════════════════════════════════════════════════ */
+    const PERFILES = {
+      'Razonamiento Verbal':    { base: 0.93, sigma: 0.04 },
+      'Literatura':             { base: 0.91, sigma: 0.05 },
+      'Biología':               { base: 0.86, sigma: 0.07 },
+      'Lenguaje':               { base: 0.84, sigma: 0.06 },
+      'Psicología':             { base: 0.82, sigma: 0.08 },
+      'Historia del Perú':      { base: 0.76, sigma: 0.09 },
+      'Geografía':              { base: 0.74, sigma: 0.08 },
+      'Filosofía':              { base: 0.72, sigma: 0.10 },
+      'Cívica':                 { base: 0.71, sigma: 0.07 },
+      'Ecología':               { base: 0.67, sigma: 0.10 },
+      'Economía':               { base: 0.65, sigma: 0.11 },
+      'Historia Universal':     { base: 0.63, sigma: 0.09 },
+      'Anatomía':               { base: 0.62, sigma: 0.12 },
+      'Química':                { base: 0.57, sigma: 0.13 },
+      'Física':                 { base: 0.54, sigma: 0.14 },
+      'Aritmética':             { base: 0.52, sigma: 0.12 },
+      'Álgebra':                { base: 0.42, sigma: 0.15 },
+      'Geometría':              { base: 0.38, sigma: 0.16 },
+      'Trigonometría':          { base: 0.31, sigma: 0.18 },
+      'Razonamiento Matemático':{ base: 0.28, sigma: 0.17 },
+    };
+
+    /* ═══════════════════════════════════════════════════════
+       BASE DE DATOS
+    ═══════════════════════════════════════════════════════ */
+    let SYLLABUS = {};
+    let RESULTADOS = {};
+
+    function generarRespuesta(ratioBase) {
+      // Ruido gaussiano (CLT de 3 vars)
+      const noise = (rand() + rand() + rand() - 1.5) * 0.22;
+      const ratio = clamp(ratioBase + noise, 0.02, 0.98);
+      // Preguntas por subtema: variable (no estático, según Consideraciones.md)
+      const total    = rInt(CICLO.preguntasPorFicha.min, CICLO.preguntasPorFicha.max);
+      const marcadas = Math.round(total * clamp(rand() * 0.4 + 0.6, 0.5, 1));
+      const correctas   = Math.round(marcadas * ratio);
+      const incorrectas = marcadas - correctas;
+      const blancas     = total - marcadas;
+      // Tiempo de resolución por pregunta (min) — ligado al rendimiento
+      const tackBase = ratio > 0.8 ? rInt(8, 14) / 10 : rInt(14, 26) / 10;
+      return {
+        correctas: Math.max(0, correctas),
+        incorrectas: Math.max(0, incorrectas),
+        blancas: Math.max(0, blancas),
+        totalPreguntas: total,
+        tackTime: tackBase  // min/pregunta
+      };
+    }
+
+    function inicializar() {
+      initRng();
+      SYLLABUS   = { ciclo: CICLO.nombre, semanas: {} };
+      RESULTADOS = { alumno: CICLO.alumno, semanas: {} };
+
+      for (let s = 1; s <= CICLO.semanas; s++) {
+        SYLLABUS.semanas[s]   = { semana: s, cursos: {} };
+        RESULTADOS.semanas[s] = { semana: s, detalles: {} };
+
+        CURSOS.forEach(curso => {
+          const numTemas = rInt(8, 15);
+          const temas = Array.from({ length: numTemas }, (_, ti) => {
+            const numSub = rInt(14, 20);
+            const subtemas = Array.from({ length: numSub }, (_, si) => ({
+              id: `S${s}_${curso}_T${ti+1}_ST${si+1}`,
+              nombre: `Subtema ${si+1} del Tema ${ti+1}`
+            }));
+            return { nombre: `Tema ${ti+1}`, subtemas };
+          });
+          SYLLABUS.semanas[s].cursos[curso] = { temas };
+
+          const perfil  = PERFILES[curso] || { base: 0.6, sigma: 0.1 };
+          const baseW   = clamp(perfil.base + (rand()-0.5)*0.16, 0.05, 0.97);
+
+          // 4 fichas por semana por curso: E (Entrada), I (Intermedia), R (Reforzamiento), S (Salida)
+          const fichas = {};
+          CICLO.tiposFicha.forEach((tipo, fi) => {
+            fichas[tipo] = { tipo, temas: {} };
+            temas.forEach(tema => {
+              const baseT = clamp(baseW + (rand()-0.5)*perfil.sigma*2, 0.04, 0.98);
+              fichas[tipo].temas[tema.nombre] = { subtemas: {} };
+              tema.subtemas.forEach(st => {
+                const baseS = clamp(baseT + (rand()-0.5)*perfil.sigma, 0.02, 0.99);
+                const resp  = generarRespuesta(baseS);
+                fichas[tipo].temas[tema.nombre].subtemas[st.nombre] = {
+                  ...resp, id: st.id
+                };
+              });
+            });
+          });
+
+          RESULTADOS.semanas[s].detalles[curso] = { fichas };
+        });
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CÁLCULOS DE MÉTRICAS
+    ═══════════════════════════════════════════════════════ */
+    function calcularMetricasSemanas(semanas) {
+      let C=0, I=0, B=0, totalPrg=0;
+      const cursosSet = new Set();
+
+      semanas.forEach(s => {
+        CURSOS.forEach(curso => {
+          const syl = SYLLABUS.semanas[s].cursos[curso];
+          const res = RESULTADOS.semanas[s].detalles[curso];
+          if (!res || !res.fichas) return;
+
+          // Agregar resultados de las 4 fichas
+          Object.values(res.fichas).forEach(ficha => {
+            syl.temas.forEach(tema => {
+              tema.subtemas.forEach(st => {
+                const r = ficha.temas[tema.nombre]?.subtemas[st.nombre];
+                if (!r) return;
+                C += r.correctas; I += r.incorrectas; B += r.blancas;
+                totalPrg += r.totalPreguntas;
+              });
+            });
+          });
+          cursosSet.add(curso);
+        });
+      });
+
+      const marcadas  = C + I;
+      const precision = marcadas > 0 ? (C/marcadas)*100 : 0;
+
+      return { C, I, B, totalPrg, precision, cursosEval: cursosSet.size };
+    }
+
+    function getSemanas() {
+      let semanas;
+      if (currentVista === 'general') {
+        semanas = Array.from({ length: CICLO.semanas }, (_,i)=>i+1);
+      } else {
+        const d = parseInt(document.getElementById('semana-desde').value);
+        const h = parseInt(document.getElementById('semana-hasta').value);
+        const start = Math.min(d, h);
+        const end = Math.max(d, h);
+        semanas = [];
+        for (let s = start; s <= end; s++) semanas.push(s);
+      }
+      // Filter by week type
+      if (weekTypeFilter === 'avance') {
+        semanas = semanas.filter(s => !CICLO.feedbackSemanas.includes(s));
+      } else if (weekTypeFilter === 'feedback') {
+        semanas = semanas.filter(s => CICLO.feedbackSemanas.includes(s));
+      }
+      return semanas;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ESTADO DE NAVEGACIÓN
+    ═══════════════════════════════════════════════════════ */
+    let currentVista   = 'general';
+    let selectedGroup  = null;   // 'Números' | 'Ciencias' | 'Letras' | 'Humanidades'
+    let selectedCourse = null;
+    let selectedTheme  = null;
+    let weekTypeFilter = 'todas'; // 'todas' | 'avance' | 'feedback'
+
+    /* ═══════════════════════════════════════════════════════
+       COLOR
+    ═══════════════════════════════════════════════════════ */
+    function colorCalor(p) {
+      if (p >= 90) return 'var(--heat-excellent)';
+      if (p >= 80) return 'var(--heat-good)';
+      if (p >= 70) return 'var(--heat-average)';
+      if (p >= 50) return 'var(--heat-low)';
+      return 'var(--heat-poor)';
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CONTADOR ANIMADO
+    ═══════════════════════════════════════════════════════ */
+    function animarNum(el, dest, suf='', dec=0, dur=750) {
+      if (!el) return;
+      const start = performance.now();
+      const step = now => {
+        const t = clamp((now-start)/dur, 0, 1);
+        const e = 1 - Math.pow(1-t, 3);
+        el.textContent = dec > 0 ? (dest*e).toFixed(dec)+suf : Math.round(dest*e)+suf;
+        if (t < 1) requestAnimationFrame(step);
+      };
+      requestAnimationFrame(step);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ACTUALIZAR MÉTRICAS UI
+    ═══════════════════════════════════════════════════════ */
+    function actualizarMetricas(m) {
+      // Donut hero
+      const pct = m.precision;
+      const circ = 2 * Math.PI * 45;
+      const offset = circ - (pct/100)*circ;
+      const fill = document.getElementById('donut-fill');
+      if (fill) {
+        fill.style.stroke = colorCalor(pct);
+        setTimeout(() => { fill.style.strokeDashoffset = offset; }, 200);
+      }
+      const donutPct = document.getElementById('donut-pct');
+      if (donutPct) animarNum(donutPct, pct, '%', 0, 900);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       RENDER SECCIONES
+    ═══════════════════════════════════════════════════════ */
+    function renderSeccionCriticos(semanas) {
+      const grid = document.getElementById('criticos-grid');
+      const count = document.getElementById('criticos-count');
+      if (!grid) return;
+      grid.innerHTML = '';
+
+      const criticos = obtenerTemasCriticos(semanas, 8);
+      if (count) count.textContent = `${criticos.length} temas`;
+
+      criticos.forEach((d, idx) => {
+        const color = colorCalor(d.precision);
+        const card = document.createElement('div');
+        card.className = 'critico-card';
+        card.style.setProperty('--cc', color);
+        card.style.transitionDelay = `${idx * 40}ms`;
+        card.onclick = () => {
+          selectedCourse = d.curso;
+          selectedTheme = d.tema;
+          renderDashboard();
+          document.getElementById('heatmap-container')?.scrollIntoView({ behavior: 'smooth' });
+        };
+        card.innerHTML = `
+          <div class="critico-top">
+            <div>
+              <div class="critico-tema">${d.tema}</div>
+              <div class="critico-meta">${d.curso} · ${d.numSub} subtemas</div>
+            </div>
+            <div class="critico-pct">${d.precision.toFixed(0)}%</div>
+          </div>
+          <div class="critico-bar"><div class="critico-bar-fill" style="width:${d.precision}%"></div></div>
+        `;
+        grid.appendChild(card);
+      });
+    }
+
+    function renderHeatmapSemanaCurso(semanas, cursos) {
+      const table = document.getElementById('week-course-table');
+      if (!table) return;
+
+      let html = '<thead><tr><th>Sem</th>';
+      cursos.forEach(c => { html += `<th>${c.substring(0,8)}</th>`; });
+      html += '</tr></thead><tbody>';
+
+      semanas.forEach(s => {
+        const tipo = getTipoSemana(s);
+        html += `<tr><td class="week-label">Sem ${s} <span class="week-type-badge ${tipo}"></span></td>`;
+        cursos.forEach(curso => {
+          const d = acumularSemanaCurso(s, curso);
+          if (!d || d.totalPrg === 0) {
+            html += '<td class="week-cell na">–</td>';
+          } else {
+            const color = colorCalor(d.precision);
+            html += `<td class="week-cell" style="background:${color};color:${d.precision > 60 ? '#000' : '#fff'}"
+              title="${curso} Sem ${s}: ${d.precision.toFixed(0)}% (C:${d.C} I:${d.I} B:${d.B})"
+              onclick="selectedCourse='${curso}';selectedTheme=null;renderDashboard();"
+            >${d.precision.toFixed(0)}%</td>`;
+          }
+        });
+        html += '</tr>';
+      });
+      html += '</tbody>';
+      table.innerHTML = html;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       HERO CHIPS
+    ═══════════════════════════════════════════════════════ */
+    function actualizarHero(m) {
+      const meta = document.getElementById('hero-meta');
+      if (!meta) return;
+      meta.innerHTML = `
+        <div class="hero-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+          ${CICLO.semanas} semanas
+        </div>
+        <div class="hero-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+          ${m.cursosEval} cursos activos
+        </div>
+        <div class="hero-chip">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+          ${m.totalPrg.toLocaleString()} preguntas
+        </div>
+      `;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       SELECTOR DE SEMANA (RANGO)
+    ═══════════════════════════════════════════════════════ */
+    function poblarSelect() {
+      const selDesde = document.getElementById('semana-desde');
+      const selHasta = document.getElementById('semana-hasta');
+      selDesde.innerHTML = ''; selHasta.innerHTML = '';
+      for (let s = 1; s <= CICLO.semanas; s++) {
+        const tipo = getTipoSemana(s);
+        const badge = tipo === 'feedback' ? ' 🔵' : ' 🟢';
+        const o1 = document.createElement('option');
+        o1.value = s; o1.textContent = `Sem ${s} ${badge}`;
+        selDesde.appendChild(o1);
+        const o2 = document.createElement('option');
+        o2.value = s; o2.textContent = `Sem ${s} ${badge}`;
+        selHasta.appendChild(o2);
+      }
+      selHasta.value = CICLO.semanas;
+      selDesde.classList.add('hidden');
+      selHasta.classList.add('hidden');
+      document.getElementById('week-range').classList.add('hidden');
+    }
+
+    function actualizarRangeLabel() {
+      const label = document.getElementById('week-range-label');
+      if (!label) return;
+      let txt;
+      if (currentVista === 'general') {
+        const n = weekTypeFilter === 'todas' ? CICLO.semanas :
+                  weekTypeFilter === 'avance' ? CICLO.semanas - CICLO.feedbackSemanas.length :
+                  CICLO.feedbackSemanas.length;
+        const suf = weekTypeFilter === 'todas' ? '' :
+                    weekTypeFilter === 'avance' ? ' · Avance' : ' · Feedback';
+        txt = `${n} semanas${suf}`;
+      } else {
+        const d = parseInt(document.getElementById('semana-desde').value);
+        const h = parseInt(document.getElementById('semana-hasta').value);
+        const n = h - d + 1;
+        const total = getSemanas().length;
+        const suf = total < n ? ` · ${weekTypeFilter === 'avance' ? 'Avance' : 'Feedback'}` : '';
+        txt = d === h ? `Sem ${d}${suf}` : `Sem ${d}–${h} (${n} sem)${suf}`;
+      }
+      label.textContent = txt;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       BREADCRUMB
+    ═══════════════════════════════════════════════════════ */
+    function renderBreadcrumb() {
+      const nav = document.getElementById('breadcrumb');
+      nav.innerHTML = '';
+      const rangeLabel = document.getElementById('week-range-label')?.textContent || 'Ciclo Completo';
+      const label = currentVista === 'general' ? 'Ciclo Completo' : rangeLabel;
+
+      const addBtn = (txt, cb) => {
+        const b = document.createElement('button');
+        b.className='crumb'; b.textContent=txt; b.onclick=cb; nav.appendChild(b);
+      };
+      const addSep  = () => { const s=document.createElement('span'); s.className='crumb-sep'; s.textContent='›'; nav.appendChild(s); };
+      const addAct  = txt => { const s=document.createElement('span'); s.className='crumb-active'; s.textContent=txt; nav.appendChild(s); };
+
+      if (!selectedGroup && !selectedCourse) {
+        addAct(`${label} · Grupos de Cursos`);
+      } else {
+        addBtn(`${label} · Grupos`, ()=>{ selectedGroup=null; selectedCourse=null; selectedTheme=null; renderDashboard(); });
+        addSep();
+        if (!selectedCourse) {
+          addAct(selectedGroup);
+        } else {
+          addBtn(selectedGroup, ()=>{ selectedCourse=null; selectedTheme=null; renderDashboard(); });
+          addSep();
+          if (!selectedTheme) {
+            addAct(selectedCourse);
+          } else {
+            addBtn(selectedCourse, ()=>{ selectedTheme=null; renderDashboard(); });
+            addSep();
+            addAct(selectedTheme);
+          }
+        }
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CREAR CELDA HEATMAP
+    ═══════════════════════════════════════════════════════ */
+    function crearCelda({ name, sub, C, I, B, totalPrg, precision, onClick, leaf, delay }) {
+      const color = colorCalor(precision);
+      const cell  = document.createElement('div');
+      cell.className = 'hm-cell';
+      cell.style.setProperty('--cc', color);
+      cell.style.transitionDelay = `${delay * 35}ms`;
+
+      if (leaf) cell.dataset.leaf = 'true';
+      if (onClick) { cell.onclick = onClick; cell.setAttribute('role', 'button'); cell.setAttribute('tabindex', '0');
+        cell.addEventListener('keydown', e => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onClick(); } });
+      }
+
+      const subTxt = leaf
+        ? `C:${C} I:${I} B:${B} · ${totalPrg}preg`
+        : sub;
+
+      cell.innerHTML = `
+        <div class="cell-z">
+          <div class="cell-name">${name}</div>
+        </div>
+        <div class="cell-z">
+          <div class="cell-prog"><div class="cell-prog-fill" data-pct="${precision.toFixed(1)}"></div></div>
+          <div class="cell-bottom">
+            <span class="cell-sub">${subTxt}</span>
+            <span class="cell-pct">${precision.toFixed(0)}%</span>
+          </div>
+        </div>
+      `;
+
+      cell.setAttribute('aria-label', `${name}: ${precision.toFixed(0)}% precisión, ${C} correctas, ${I} incorrectas, ${B} en blanco`);
+      cell.onmousemove = e => showTooltip(e, name, C, I, B, totalPrg, precision);
+      cell.onmouseleave = hideTooltip;
+
+      return cell;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       SCROLL REVEAL OBSERVER (para celdas)
+    ═══════════════════════════════════════════════════════ */
+    let cellObserver;
+
+    function initCellObserver(grid) {
+      if (cellObserver) cellObserver.disconnect();
+      cellObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('visible');
+            // Animar barra interna
+            const fill = entry.target.querySelector('.cell-prog-fill');
+            if (fill) setTimeout(() => { fill.style.width = fill.dataset.pct+'%'; }, 100);
+            cellObserver.unobserve(entry.target);
+          }
+        });
+      }, { threshold: 0.1, rootMargin: '0px 0px -40px 0px' });
+
+      grid.querySelectorAll('.hm-cell, .hm-category').forEach(c => cellObserver.observe(c));
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       CALCULAR DATOS POR CURSO / TEMA (multi-semana)
+    ═══════════════════════════════════════════════════════ */
+    function acumularCurso(curso, semanas) {
+      let C=0, I=0, B=0, totalPrg=0;
+      semanas.forEach(s => {
+        const syl = SYLLABUS.semanas[s].cursos[curso];
+        const res = RESULTADOS.semanas[s].detalles[curso];
+        if (!res || !res.fichas) return;
+        Object.values(res.fichas).forEach(ficha => {
+          syl.temas.forEach(tema => {
+            tema.subtemas.forEach(st => {
+              const r = ficha.temas[tema.nombre]?.subtemas[st.nombre];
+              if (!r) return;
+              C+=r.correctas; I+=r.incorrectas; B+=r.blancas;
+              totalPrg+=r.totalPreguntas;
+            });
+          });
+        });
+      });
+      const m = C+I; const precision = m>0 ? (C/m)*100 : 0;
+      return { C, I, B, totalPrg, precision };
+    }
+
+    function acumularTemas(curso, semanas) {
+      const map = {};
+      semanas.forEach(s => {
+        const syl = SYLLABUS.semanas[s].cursos[curso];
+        const res = RESULTADOS.semanas[s].detalles[curso];
+        if (!res || !res.fichas) return;
+        Object.values(res.fichas).forEach(ficha => {
+          syl.temas.forEach(tema => {
+            if (!map[tema.nombre]) map[tema.nombre] = { C:0, I:0, B:0, totalPrg:0, numSub: tema.subtemas.length };
+            tema.subtemas.forEach(st => {
+              const r = ficha.temas[tema.nombre]?.subtemas[st.nombre];
+              if (!r) return;
+              map[tema.nombre].C+=r.correctas; map[tema.nombre].I+=r.incorrectas;
+              map[tema.nombre].B+=r.blancas; map[tema.nombre].totalPrg+=r.totalPreguntas;
+            });
+          });
+        });
+      });
+      return map;
+    }
+
+    function acumularSubtemas(curso, tema, semanas) {
+      const map = {};
+      semanas.forEach(s => {
+        const syl = SYLLABUS.semanas[s].cursos[curso];
+        const res = RESULTADOS.semanas[s].detalles[curso];
+        if (!res || !res.fichas) return;
+        const temaObj = syl.temas.find(t => t.nombre === tema);
+        if (!temaObj) return;
+        Object.values(res.fichas).forEach(ficha => {
+          temaObj.subtemas.forEach(st => {
+            if (!map[st.nombre]) map[st.nombre] = { C:0, I:0, B:0, totalPrg:0 };
+            const r = ficha.temas[tema]?.subtemas[st.nombre];
+            if (!r) return;
+            map[st.nombre].C+=r.correctas; map[st.nombre].I+=r.incorrectas;
+            map[st.nombre].B+=r.blancas; map[st.nombre].totalPrg+=r.totalPreguntas;
+          });
+        });
+      });
+      return map;
+    }
+
+    function acumularGrupos(semanas) {
+      const grupos = {};
+      for (const [grupo, cursos] of Object.entries(GRUPOS_CURSOS)) {
+        let C=0, I=0, B=0, totalPrg=0;
+        cursos.forEach(curso => {
+          const d = acumularCurso(curso, semanas);
+          C+=d.C; I+=d.I; B+=d.B; totalPrg+=d.totalPrg;
+        });
+        const m = C+I; const precision = m>0 ? (C/m)*100 : 0;
+        grupos[grupo] = { C, I, B, totalPrg, precision, cursos: cursos.length };
+      }
+      return grupos;
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       TEMAS CRÍTICOS (peor rendimiento)
+    ═══════════════════════════════════════════════════════ */
+    function obtenerTemasCriticos(semanas, limit = 10) {
+      const allTemas = [];
+      CURSOS.forEach(curso => {
+        const temas = acumularTemas(curso, semanas);
+        Object.entries(temas).forEach(([nombre, d]) => {
+          const m2 = d.C + d.I;
+          const precision = m2 > 0 ? (d.C / m2) * 100 : 0;
+          allTemas.push({
+            curso, tema: nombre,
+            C: d.C, I: d.I, B: d.B,
+            totalPrg: d.totalPrg, precision,
+            numSub: d.numSub
+          });
+        });
+      });
+      allTemas.sort((a, b) => a.precision - b.precision);
+      return allTemas.slice(0, limit);
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       HEATMAP SEMANA × CURSO
+    ═══════════════════════════════════════════════════════ */
+    function acumularSemanaCurso(semana, curso) {
+      const syl = SYLLABUS.semanas[semana]?.cursos[curso];
+      const res = RESULTADOS.semanas[semana]?.detalles[curso];
+      if (!syl || !res || !res.fichas) return null;
+      let C=0, I=0, B=0, totalPrg=0;
+      Object.values(res.fichas).forEach(ficha => {
+        syl.temas.forEach(tema => {
+          tema.subtemas.forEach(st => {
+            const r = ficha.temas[tema.nombre]?.subtemas[st.nombre];
+            if (!r) return;
+            C += r.correctas; I += r.incorrectas; B += r.blancas;
+            totalPrg += r.totalPreguntas;
+          });
+        });
+      });
+      const m = C+I;
+      return { C, I, B, totalPrg, precision: m > 0 ? (C/m)*100 : 0 };
+    }
+
+    function acumularFichasSemanaCurso(semana, curso) {
+      const res = RESULTADOS.semanas[semana]?.detalles[curso];
+      const syl = SYLLABUS.semanas[semana]?.cursos[curso];
+      if (!res || !res.fichas || !syl) return [];
+      return CICLO.tiposFicha.map(tipo => {
+        const ficha = res.fichas[tipo];
+        let C=0, I=0, B=0, totalPrg=0;
+        syl.temas.forEach(tema => {
+          tema.subtemas.forEach(st => {
+            const r = ficha?.temas[tema.nombre]?.subtemas[st.nombre];
+            if (!r) return;
+            C += r.correctas; I += r.incorrectas; B += r.blancas;
+            totalPrg += r.totalPreguntas;
+          });
+        });
+        const m = C+I;
+        return { tipo, C, I, B, totalPrg, precision: m > 0 ? (C/m)*100 : 0 };
+      });
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       RENDER DASHBOARD
+    ═══════════════════════════════════════════════════════ */
+    function renderDashboard() {
+      renderBreadcrumb();
+      const semanas = getSemanas();
+      const m = calcularMetricasSemanas(semanas);
+      actualizarMetricas(m);
+      actualizarHero(m);
+
+      // Renderizar secciones auxiliares
+      renderSeccionCriticos(semanas);
+      // Heatmap semana × curso: usar primeros cursos de cada grupo
+      const cursosHeatmap = [];
+      for (const [grupo, cursos] of Object.entries(GRUPOS_CURSOS)) {
+        cursos.forEach(c => { if (cursosHeatmap.length < 6) cursosHeatmap.push(c); });
+      }
+      renderHeatmapSemanaCurso(semanas, cursosHeatmap);
+
+      const container = document.getElementById('heatmap-container');
+      const title     = document.getElementById('hm-title');
+      const sub       = document.getElementById('hm-sub');
+      container.innerHTML = '';
+
+      const rangeLabel = document.getElementById('week-range-label')?.textContent || 'Ciclo Completo';
+      const label = currentVista === 'general' ? 'Ciclo Completo' : rangeLabel;
+
+      /* ── Nivel 0: Grupos (Números, Ciencias, Letras, Humanidades) ── */
+      if (!selectedGroup && !selectedCourse) {
+        title.textContent = `Rendimiento por Grupos · ${label}`;
+        sub.textContent   = 'Clic en un grupo → explorar cursos';
+        const grid = document.createElement('div');
+        grid.className = 'hm-grid';
+
+        const gruposData = acumularGrupos(semanas);
+        const gruposOrdenados = Object.entries(gruposData)
+          .sort(([,a], [,b]) => b.precision - a.precision);
+
+        gruposOrdenados.forEach(([name, d], idx) => {
+          const color = colorCalor(d.precision);
+          const cat = document.createElement('div');
+          cat.className = 'hm-category';
+          cat.style.setProperty('--cc', color);
+          cat.style.transitionDelay = `${idx * 50}ms`;
+          cat.onclick = () => { selectedGroup = name; renderDashboard(); };
+          cat.setAttribute('role', 'button');
+          cat.setAttribute('tabindex', '0');
+          cat.addEventListener('keydown', e => {
+            if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); cat.onclick(); }
+          });
+          cat.innerHTML = `
+            <div class="cat-icon">${iconoGrupo(name)}</div>
+            <div class="cat-name">${name}</div>
+            <div class="cat-sub">${d.cursos} cursos · ${d.totalPrg} preguntas</div>
+            <div class="cat-bottom">
+              <span class="cat-count">C:${d.C} I:${d.I} B:${d.B}</span>
+              <span class="cat-pct">${d.precision.toFixed(0)}%</span>
+            </div>
+          `;
+          grid.appendChild(cat);
+        });
+
+        container.appendChild(grid);
+        initCellObserver(grid);
+        return;
+      }
+
+      /* ── Nivel 1: Cursos en el grupo ── */
+      if (selectedGroup && !selectedCourse) {
+        title.textContent = `${selectedGroup} · Cursos · ${label}`;
+        sub.textContent   = 'Clic en un curso → explorar temas';
+        const grid = document.createElement('div');
+        grid.className = 'hm-grid';
+
+        const cursosGrupo = GRUPOS_CURSOS[selectedGroup] || [];
+        const cursosData = cursosGrupo.map(curso => ({ ...acumularCurso(curso, semanas), curso }));
+        cursosData.sort((a, b) => b.precision - a.precision);
+
+        const grupos = [
+          { key: 'excelentes', label: 'Excelentes (≥90%)', color: 'var(--heat-excellent)', filter: d => d.precision >= 90 },
+          { key: 'seguros',    label: 'Seguros (80–89%)',  color: 'var(--heat-good)',      filter: d => d.precision >= 80 && d.precision < 90 },
+          { key: 'riesgo',     label: 'En Riesgo (60–79%)', color: 'var(--heat-average)',    filter: d => d.precision >= 60 && d.precision < 80 },
+          { key: 'criticos',   label: 'Críticos (<60%)',    color: 'var(--heat-poor)',       filter: d => d.precision < 60 }
+        ];
+
+        let cellIdx = 0;
+        grupos.forEach(grupo => {
+          const items = cursosData.filter(grupo.filter);
+          if (items.length === 0) return;
+
+          const header = document.createElement('div');
+          header.className = 'hm-group-header';
+          header.style.setProperty('--group-color', grupo.color);
+          header.innerHTML = `
+            <span class="hm-group-dot"></span>
+            <span class="hm-group-label">${grupo.label}</span>
+            <span class="hm-group-count">${items.length} curso${items.length !== 1 ? 's' : ''}</span>
+          `;
+          grid.appendChild(header);
+
+          items.forEach((d, i) => {
+            grid.appendChild(crearCelda({
+              name: d.curso, sub: `C:${d.C} I:${d.I} B:${d.B} · ${d.totalPrg}preg`,
+              C: d.C, I: d.I, B: d.B, totalPrg: d.totalPrg,
+              precision: d.precision, onClick: ()=>{ selectedCourse=d.curso; renderDashboard(); },
+              leaf: false, delay: cellIdx++
+            }));
+          });
+        });
+
+        container.appendChild(grid);
+        initCellObserver(grid);
+        return;
+      }
+
+      /* ── Nivel 2: Temas del curso ── */
+      if (selectedCourse && !selectedTheme) {
+        title.textContent = `${selectedCourse} · Temas · ${label}`;
+        sub.textContent   = 'Clic en un tema → ver subtemas';
+        const grid = document.createElement('div');
+        grid.className = 'hm-grid';
+        const temas = acumularTemas(selectedCourse, semanas);
+
+        Object.entries(temas).forEach(([nombre, d], idx) => {
+          const m2 = d.C+d.I; const precision = m2>0 ? (d.C/m2)*100 : 0;
+          grid.appendChild(crearCelda({
+            name: nombre, sub: `${d.numSub} subtemas · ${d.totalPrg}preg`,
+            C: d.C, I: d.I, B: d.B, totalPrg: d.totalPrg,
+            precision, onClick: ()=>{ selectedTheme=nombre; renderDashboard(); },
+            leaf: false, delay: idx
+          }));
+        });
+
+        container.appendChild(grid);
+        initCellObserver(grid);
+        return;
+      }
+
+      /* ── Nivel 3: Subtemas ── */
+      if (selectedCourse && selectedTheme) {
+        title.textContent = `${selectedCourse} · ${selectedTheme} · Subtemas`;
+        sub.textContent   = 'Nivel más granular — haz hover para detalles';
+        const grid = document.createElement('div');
+        grid.className = 'hm-grid';
+        const subs = acumularSubtemas(selectedCourse, selectedTheme, semanas);
+
+        Object.entries(subs).forEach(([nombre, d], idx) => {
+          const m2 = d.C+d.I; const precision = m2>0 ? (d.C/m2)*100 : 0;
+          grid.appendChild(crearCelda({
+            name: nombre, sub: '',
+            C: d.C, I: d.I, B: d.B, totalPrg: d.totalPrg,
+            precision, onClick: null, leaf: true, delay: idx
+          }));
+        });
+
+        container.appendChild(grid);
+        initCellObserver(grid);
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       TOOLTIP
+    ═══════════════════════════════════════════════════════ */
+    const ttEl = document.getElementById('tooltip');
+
+    function showTooltip(e, name, C, I, B, totalPrg, precision) {
+      const color = colorCalor(precision);
+      ttEl.style.setProperty('--cc', color);
+      ttEl.classList.add('show');
+
+      ttEl.innerHTML = `
+        <h4>${name}</h4>
+        <div class="tt-row"><span class="tt-label">Precisión</span><span class="tt-val" style="color:${color}">${precision.toFixed(1)}%</span></div>
+        <div class="tt-row"><span class="tt-label">Correctas</span><span class="tt-val" style="color:var(--heat-good)">${C}</span></div>
+        <div class="tt-row"><span class="tt-label">Incorrectas</span><span class="tt-val" style="color:var(--heat-poor)">${I}</span></div>
+        <div class="tt-row"><span class="tt-label">En Blanco</span><span class="tt-val" style="color:var(--heat-average)">${B}</span></div>
+        <div class="tt-row"><span class="tt-label">Total preguntas</span><span class="tt-val">${totalPrg}</span></div>
+      `;
+      posTooltip(e);
+    }
+
+    function posTooltip(e) {
+      const mg=16, tw=ttEl.offsetWidth||200, th=ttEl.offsetHeight||170;
+      let x=e.clientX+mg, y=e.clientY+mg;
+      if (x+tw>window.innerWidth-mg)  x=e.clientX-tw-mg;
+      if (y+th>window.innerHeight-mg) y=e.clientY-th-mg;
+      ttEl.style.left=`${x}px`; ttEl.style.top=`${y}px`;
+    }
+    document.addEventListener('mousemove', e => { if(ttEl.classList.contains('show')) posTooltip(e); });
+    function hideTooltip() { ttEl.classList.remove('show'); }
+
+    /* ═══════════════════════════════════════════════════════
+       SCROLL REVEAL (sections)
+    ═══════════════════════════════════════════════════════ */
+    function initReveal() {
+      const obs = new IntersectionObserver(entries => {
+        entries.forEach(e => { if(e.isIntersecting) { e.target.classList.add('visible'); obs.unobserve(e.target); } });
+      }, { threshold: 0.08 });
+      document.querySelectorAll('.reveal').forEach(el => obs.observe(el));
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       TEMA
+    ═══════════════════════════════════════════════════════ */
+    function toggleTheme() {
+      const html = document.documentElement;
+      const dark = html.getAttribute('data-theme')==='dark';
+      html.setAttribute('data-theme', dark?'light':'dark');
+      const moonIcon = document.getElementById('theme-icon-moon');
+      const sunIcon = document.getElementById('theme-icon-sun');
+      if (dark) {
+        moonIcon.style.display = 'none';
+        sunIcon.style.display = 'block';
+      } else {
+        moonIcon.style.display = 'block';
+        sunIcon.style.display = 'none';
+      }
+      localStorage.setItem('lumeria-theme', dark?'light':'dark');
+    }
+    function initTheme() {
+      const t = localStorage.getItem('lumeria-theme')||'dark';
+      document.documentElement.setAttribute('data-theme', t);
+      const moonIcon = document.getElementById('theme-icon-moon');
+      const sunIcon = document.getElementById('theme-icon-sun');
+      if (t === 'dark') {
+        moonIcon.style.display = 'block';
+        sunIcon.style.display = 'none';
+      } else {
+        moonIcon.style.display = 'none';
+        sunIcon.style.display = 'block';
+      }
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       ICONOS DE GRUPOS
+    ═══════════════════════════════════════════════════════ */
+    function iconoGrupo(grupo) {
+      const icons = {
+        'Números':     '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><rect x="4" y="4" width="16" height="16" rx="2"/><path d="M9 8v8M15 8v8M8 9h8M8 15h8"/></svg>',
+        'Ciencias':    '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M9 3h6v5l4 5v1H5v-1l4-5V3z"/><path d="M5 21h14"/><path d="M12 14v4"/></svg>',
+        'Letras':      '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>',
+        'Humanidades': '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="7" r="4"/><path d="M4 21v-2a6 6 0 0112 0v2"/><path d="M16 12h4"/><path d="M18 10v4"/></svg>'
+      };
+      return icons[grupo] || '<svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><circle cx="12" cy="12" r="10"/></svg>';
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       VISTAS
+    ═══════════════════════════════════════════════════════ */
+    function setVista(v) {
+      currentVista=v; selectedGroup=null; selectedCourse=null; selectedTheme=null;
+      document.getElementById('tab-general').classList.toggle('active', v==='general');
+      document.getElementById('tab-semana').classList.toggle('active', v==='semana');
+      const range = document.getElementById('week-range');
+      if (v === 'semana') { range.classList.remove('hidden'); } else { range.classList.add('hidden'); }
+      actualizarRangeLabel();
+      renderDashboard();
+    }
+    function cambiarRango() {
+      selectedGroup=null; selectedCourse=null; selectedTheme=null;
+      actualizarRangeLabel();
+      renderDashboard();
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       FILTRO TIPO DE SEMANA
+    ═══════════════════════════════════════════════════════ */
+    function cambiarTipoSemana(tipo) {
+      weekTypeFilter = tipo;
+      document.querySelectorAll('.week-type-pill').forEach(p => p.classList.toggle('active', p.id === `wt-${tipo}`));
+      selectedGroup=null; selectedCourse=null; selectedTheme=null;
+      actualizarRangeLabel();
+      renderDashboard();
+    }
+
+    /* ═══════════════════════════════════════════════════════
+       DESCARGAR
+    ═══════════════════════════════════════════════════════ */
+    function dl(data, name) {
+      const a=document.createElement('a');
+      a.href='data:text/json;charset=utf-8,'+encodeURIComponent(JSON.stringify(data,null,2));
+      a.download=name; document.body.appendChild(a); a.click(); a.remove();
+    }
+    const descargarSyllabusJSON   = ()=>dl(SYLLABUS,   'syllabus_lumeria.json');
+    const descargarResultadosJSON = ()=>dl(RESULTADOS, 'resultados_alumno.json');
+
+    /* ═══════════════════════════════════════════════════════
+       INIT
+    ═══════════════════════════════════════════════════════ */
+    function init() {
+      initTheme();
+      inicializar();
+      poblarSelect();
+
+      document.getElementById('stu-name').textContent  = CICLO.alumno;
+      document.getElementById('stu-cycle').textContent = `Ciclo: ${CICLO.nombre}`;
+      document.getElementById('stu-avatar').textContent = CICLO.initials;
+      document.getElementById('hero-name-em').textContent = CICLO.alumno.split(' ')[0];
+
+      renderDashboard();
+      initReveal();
+    }
+
+    init();
+  </script>
+</body>
+</html>

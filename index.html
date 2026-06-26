@@ -1,0 +1,157 @@
+<!DOCTYPE html>
+<html lang="es" data-theme="light">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>EduMetric — Indicadores de Rendimiento Académico</title>
+  <meta name="description" content="Dashboard de rendimiento académico con análisis por examen, cobertura de temas y velocidad de resolución.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800;900&family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  
+  <!-- Estilos modulares externos -->
+  <link rel="stylesheet" href="src/ui/styles.css">
+</head>
+<body>
+
+  <div class="dropdown-scrim" id="dropdown-scrim" onclick="closePeriodDropdown()"></div>
+
+  <div class="app-container">
+    
+    <!-- ═══════════ SIDEBAR Izquierdo ═══════════ -->
+    <aside class="sidebar" id="sidebar">
+      <div style="display:flex; flex-direction:column; gap:28px;">
+        <div class="sidebar-brand">
+          <span class="brand-title">EduMetric</span>
+          <span class="brand-subtitle">Panel de Control</span>
+        </div>
+
+        <ul class="sidebar-menu">
+
+          
+          <!-- Categoría Selección con sub-ítems -->
+          <li class="menu-category">Selección</li>
+          <li class="menu-item active" id="menu-rendimiento">
+            <a href="#" onclick="setViewMode('rendimiento')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="18" y1="20" x2="18" y2="10"/><line x1="12" y1="20" x2="12" y2="4"/><line x1="6" y1="20" x2="6" y2="14"/></svg>
+              Rendimiento
+            </a>
+          </li>
+          <li class="menu-item" id="menu-repaso">
+            <a href="#" onclick="setViewMode('repaso')">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"></path><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"></path></svg>
+              Plan de Repaso
+            </a>
+          </li>
+
+          
+        </ul>
+      </div>
+
+      <!-- Tarjeta Usuario Bottom -->
+      <div class="user-profile-card">
+        <div class="user-avatar-wrapper">
+          <div class="user-avatar" id="sidebar-avatar">JV</div>
+        </div>
+        <div class="user-info">
+          <span class="user-name" id="sidebar-user-name">Julio Ventura</span>
+          <span class="user-role">Coordinador Académico</span>
+        </div>
+      </div>
+    </aside>
+
+    <!-- ═══════════ CONTENIDO PRINCIPAL Derecho ═══════════ -->
+    <main class="main-content">
+      
+      <!-- Top Bar -->
+      <div class="top-bar">
+        <div style="display:flex; align-items:center; gap:12px;">
+          <button class="mobile-menu-btn" onclick="toggleMobileSidebar()" aria-label="Abrir menú">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          </button>
+        </div>
+      </div>
+
+      <!-- Filtros Panel Unificado -->
+      <div class="filters-container" id="filters-container">
+        <div class="filters-unified-row">
+          <!-- Pestañas de Tipo de Semana -->
+          <div class="week-type-tabs" role="tablist">
+            <button class="type-tab active" id="tab-avance" onclick="setWeekType('avance')">Semanas de Avance</button>
+            <button class="type-tab" id="tab-feedback" onclick="setWeekType('feedback')">Semanas de Feedback</button>
+            <button class="type-tab" id="tab-comparativa" onclick="setWeekType('comparativa')">Comparativa</button>
+          </div>
+
+          <!-- Controles de Periodo (Ocultados dinámicamente en Comparativa) -->
+          <div class="period-controls-group" id="period-controls-group" style="display: flex; align-items: center; gap: 12px;">
+            <div class="aggregation-toggle">
+              <button class="agg-btn active" id="btn-acumulado" onclick="setAggregation(true)">Acumulado</button>
+              <button class="agg-btn" id="btn-semanal" onclick="setAggregation(false)">Semanal</button>
+            </div>
+
+            <div class="period-selector-wrapper">
+              <button class="period-btn" id="period-btn" onclick="togglePeriodDropdown()">
+                PERIODO: <span id="period-label">Semana 1</span>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 12 15 18 9"/></svg>
+              </button>
+              <div class="period-dropdown" id="period-dropdown">
+                <!-- Cargado dinámicamente -->
+              </div>
+            </div>
+          </div>
+
+          <!-- Leyenda de Rendimiento -->
+          <div class="performance-legend">
+            <span class="legend-item"><span class="legend-dot poor"></span>&lt; 60%</span>
+            <span class="legend-item"><span class="legend-dot warning"></span>60-85%</span>
+            <span class="legend-item"><span class="legend-dot excellent"></span>&gt; 85%</span>
+          </div>
+        </div>
+      </div>
+
+      <!-- Fila de Tarjetas de Categoría -->
+      <div class="categories-row" id="categories-row">
+        <!-- Generado dinámicamente -->
+      </div>
+
+      <!-- Mapa de Calor Global -->
+      <div class="heatmap-panel">
+
+        <div id="rendimiento-view">
+          <div class="heatmap-header">
+            <div class="heatmap-title-group">
+              <nav class="breadcrumb-nav" id="breadcrumb-nav">
+                <!-- Cargado dinámicamente (Cursos > Curso > Tema) -->
+              </nav>
+              <h2 class="heatmap-panel-title" id="heatmap-panel-title">Mapa de Calor Global</h2>
+              <span class="heatmap-panel-sub" id="heatmap-sub-info">20 cursos analizados según prioridad académica.</span>
+            </div>
+            <button class="order-toggle-btn" onclick="toggleSortOrder()">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><polyline points="14 5 17 9 20 5"/><polyline points="4 19 7 15 10 19"/></svg>
+              <span id="sort-order-label">MENOR A MAYOR DESEMPEÑO</span>
+            </button>
+          </div>
+
+          <div class="courses-grid" id="courses-grid">
+            <!-- Cargado dinámicamente -->
+          </div>
+        </div>
+
+        <div id="repaso-view" style="display: none;">
+          <!-- Cargado dinámicamente -->
+        </div>
+      </div>
+
+    </main>
+  </div>
+
+  <div id="tooltip" role="tooltip"></div>
+
+  <!-- 
+    Script de Entrada Principal (ES6 Modules)
+    Usa type="module" para permitir importaciones/exportaciones nativas en el navegador.
+    De este modo, mantenemos un código modular, mantenible y desacoplado en /src.
+  -->
+  <script type="module" src="src/ui/dashboard.js"></script>
+</body>
+</html>

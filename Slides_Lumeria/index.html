@@ -1,0 +1,791 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Presentación Lumeria & Learnex - Estado del Proyecto</title>
+  <!-- Importar Fuentes Modernas de Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;600;800&family=Plus+Jakarta+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+  
+  <style>
+    /* VARIABLES DE DISEÑO (ESTILO PREMIUM DARK) */
+    :root {
+      --bg-gradient: linear-gradient(135deg, #07040e 0%, #110b25 50%, #080512 100%);
+      --card-bg: rgba(255, 255, 255, 0.03);
+      --card-border: rgba(255, 255, 255, 0.07);
+      --glass-glow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+      --primary: #9d4edd;
+      --primary-glow: rgba(157, 78, 221, 0.35);
+      --secondary: #3f37c9;
+      --accent-green: #00f5d4;
+      --accent-red: #ff0054;
+      --accent-yellow: #fee440;
+      --text-main: #f3f0fc;
+      --text-muted: #9e9aad;
+      --font-title: 'Outfit', sans-serif;
+      --font-body: 'Plus Jakarta Sans', sans-serif;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      font-family: var(--font-body);
+      background: var(--bg-gradient);
+      color: var(--text-main);
+      overflow: hidden;
+      height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    /* EFECTOS DE LUCES EN EL FONDO (AMBIENT GLOW) */
+    .ambient-glow-1 {
+      position: absolute;
+      top: -15%;
+      left: -15%;
+      width: 50vw;
+      height: 50vw;
+      background: radial-gradient(circle, rgba(157, 78, 221, 0.12) 0%, rgba(0, 0, 0, 0) 70%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    .ambient-glow-2 {
+      position: absolute;
+      bottom: -15%;
+      right: -15%;
+      width: 60vw;
+      height: 60vw;
+      background: radial-gradient(circle, rgba(0, 245, 212, 0.08) 0%, rgba(0, 0, 0, 0) 70%);
+      pointer-events: none;
+      z-index: 1;
+    }
+
+    /* CONTENEDOR DE DIAPOSITIVAS */
+    .slides-container {
+      flex: 1;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      position: relative;
+      z-index: 10;
+      padding: 20px;
+    }
+
+    .slide {
+      position: absolute;
+      width: 92%;
+      max-width: 1100px;
+      height: 82vh;
+      max-height: 680px;
+      background: var(--card-bg);
+      border: 1px solid var(--card-border);
+      border-radius: 24px;
+      backdrop-filter: blur(25px);
+      -webkit-backdrop-filter: blur(25px);
+      box-shadow: var(--glass-glow);
+      padding: 40px 50px;
+      opacity: 0;
+      transform: translateY(30px) scale(0.98);
+      pointer-events: none;
+      transition: all 0.5s cubic-bezier(0.16, 1, 0.3, 1);
+      display: flex;
+      flex-direction: column;
+      justify-content: space-between;
+    }
+
+    .slide.active {
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      pointer-events: all;
+    }
+
+    /* ENCABEZADOS Y TEXTOS */
+    .slide-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+      padding-bottom: 15px;
+      margin-bottom: 25px;
+    }
+
+    .slide-header h2 {
+      font-family: var(--font-title);
+      font-size: 2.2rem;
+      font-weight: 800;
+      background: linear-gradient(90deg, #ffffff, #d3c7ff);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      letter-spacing: -0.5px;
+    }
+
+    .slide-header .slide-tag {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--primary);
+      text-transform: uppercase;
+      letter-spacing: 1.5px;
+      border: 1px solid var(--primary);
+      padding: 4px 12px;
+      border-radius: 20px;
+      background: rgba(157, 78, 221, 0.1);
+    }
+
+    .slide-body {
+      flex: 1;
+      overflow-y: auto;
+      padding-right: 5px;
+      margin-bottom: 15px;
+    }
+
+    /* PERSONALIZACIÓN DEL SCROLL */
+    .slide-body::-webkit-scrollbar {
+      width: 6px;
+    }
+    .slide-body::-webkit-scrollbar-track {
+      background: transparent;
+    }
+    .slide-body::-webkit-scrollbar-thumb {
+      background: rgba(255, 255, 255, 0.1);
+      border-radius: 4px;
+    }
+
+    p {
+      color: var(--text-muted);
+      line-height: 1.6;
+      font-size: 1.05rem;
+      margin-bottom: 15px;
+    }
+
+    .highlight {
+      color: var(--text-main);
+      font-weight: 600;
+    }
+
+    /* GRILLAS Y TARJETAS */
+    .grid-2 {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 25px;
+    }
+
+    .grid-3 {
+      display: grid;
+      grid-template-columns: 1fr 1fr 1fr;
+      gap: 20px;
+    }
+
+    .feature-card {
+      background: rgba(255, 255, 255, 0.015);
+      border: 1px solid rgba(255, 255, 255, 0.04);
+      border-radius: 16px;
+      padding: 22px;
+      transition: all 0.3s ease;
+    }
+
+    .feature-card:hover {
+      background: rgba(255, 255, 255, 0.03);
+      border-color: rgba(157, 78, 221, 0.3);
+      transform: translateY(-2px);
+    }
+
+    .feature-card h3 {
+      font-family: var(--font-title);
+      font-size: 1.25rem;
+      margin-bottom: 12px;
+      color: var(--text-main);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+
+    .feature-card ul {
+      list-style-type: none;
+      color: var(--text-muted);
+      font-size: 0.95rem;
+    }
+
+    .feature-card li {
+      margin-bottom: 8px;
+      position: relative;
+      padding-left: 18px;
+      line-height: 1.4;
+    }
+
+    .feature-card li::before {
+      content: "•";
+      color: var(--primary);
+      position: absolute;
+      left: 0;
+      font-weight: bold;
+    }
+
+    .feature-card.alert-card {
+      border-color: rgba(255, 0, 84, 0.2);
+      background: rgba(255, 0, 84, 0.01);
+    }
+    .feature-card.alert-card:hover {
+      border-color: var(--accent-red);
+      background: rgba(255, 0, 84, 0.02);
+    }
+    .feature-card.alert-card h3 {
+      color: #ff4d6d;
+    }
+    .feature-card.alert-card li::before {
+      color: var(--accent-red);
+    }
+
+    /* DIAPOSITIVA DE PORTADA */
+    .slide-cover {
+      text-align: center;
+      justify-content: center;
+      align-items: center;
+      gap: 15px;
+    }
+
+    .slide-cover h1 {
+      font-family: var(--font-title);
+      font-size: 3.8rem;
+      font-weight: 800;
+      letter-spacing: -2px;
+      background: linear-gradient(to right, #ffffff 20%, #9d4edd 60%, #00f5d4 100%);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      margin-bottom: 10px;
+      animation: title-glow 3s infinite alternate;
+    }
+
+    .slide-cover p.subtitle {
+      font-size: 1.35rem;
+      color: var(--text-muted);
+      margin-bottom: 25px;
+    }
+
+    .slide-cover .badge-container {
+      display: flex;
+      gap: 15px;
+      margin-top: 15px;
+    }
+
+    .badge {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      padding: 8px 18px;
+      border-radius: 50px;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--text-main);
+    }
+
+    /* SIMULADOR INTERACTIVO */
+    .sim-container {
+      background: rgba(0, 0, 0, 0.2);
+      border: 1px solid rgba(255, 255, 255, 0.05);
+      border-radius: 16px;
+      padding: 22px;
+      display: grid;
+      grid-template-columns: 1fr 1.2fr;
+      gap: 25px;
+    }
+
+    .sim-inputs {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .input-group {
+      display: flex;
+      flex-direction: column;
+      gap: 5px;
+    }
+
+    .input-group label {
+      font-size: 0.8rem;
+      font-weight: 700;
+      color: var(--text-muted);
+      text-transform: uppercase;
+    }
+
+    .input-group input {
+      background: rgba(255, 255, 255, 0.05);
+      border: 1px solid rgba(255, 255, 255, 0.1);
+      border-radius: 8px;
+      padding: 9px 12px;
+      color: var(--text-main);
+      font-family: var(--font-title);
+      font-size: 1.05rem;
+      transition: all 0.3s ease;
+    }
+
+    .input-group input:focus {
+      outline: none;
+      border-color: var(--primary);
+      box-shadow: 0 0 10px var(--primary-glow);
+    }
+
+    .sim-results {
+      border-left: 1px solid rgba(255, 255, 255, 0.05);
+      padding-left: 25px;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      gap: 15px;
+    }
+
+    .result-metric {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .result-val {
+      font-family: var(--font-title);
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: var(--accent-green);
+      transition: all 0.3s ease;
+    }
+
+    .status-pill {
+      display: inline-block;
+      padding: 6px 16px;
+      border-radius: 30px;
+      font-weight: 700;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+      text-align: center;
+      transition: all 0.3s ease;
+    }
+
+    .status-pill.secure {
+      background: rgba(0, 245, 212, 0.15);
+      border: 1px solid var(--accent-green);
+      color: var(--accent-green);
+    }
+
+    .status-pill.vulnerable {
+      background: rgba(255, 0, 84, 0.15);
+      border: 1px solid var(--accent-red);
+      color: var(--accent-red);
+    }
+
+    /* CONTROLES DE NAVEGACIÓN EN EL PIE DE PÁGINA */
+    .controls-footer {
+      padding: 20px 50px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      background: rgba(7, 4, 14, 0.7);
+      border-top: 1px solid rgba(255, 255, 255, 0.02);
+      backdrop-filter: blur(15px);
+      z-index: 100;
+    }
+
+    .nav-btn {
+      background: rgba(255, 255, 255, 0.04);
+      border: 1px solid rgba(255, 255, 255, 0.08);
+      color: var(--text-main);
+      padding: 10px 22px;
+      border-radius: 30px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .nav-btn:hover {
+      background: var(--primary);
+      border-color: var(--primary);
+      box-shadow: 0 0 15px var(--primary-glow);
+      transform: translateY(-1px);
+    }
+
+    .nav-btn:disabled {
+      opacity: 0.3;
+      cursor: not-allowed;
+      transform: none;
+      box-shadow: none;
+      background: rgba(255, 255, 255, 0.04);
+      border-color: rgba(255, 255, 255, 0.08);
+    }
+
+    .progress-track {
+      flex: 1;
+      max-width: 400px;
+      height: 4px;
+      background: rgba(255, 255, 255, 0.06);
+      border-radius: 10px;
+      margin: 0 40px;
+      position: relative;
+    }
+
+    .progress-bar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      height: 100%;
+      width: 0%;
+      background: linear-gradient(90deg, var(--secondary), var(--primary));
+      border-radius: 10px;
+      transition: width 0.3s ease;
+    }
+
+    .slide-number {
+      font-family: var(--font-title);
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      font-weight: 600;
+    }
+
+    /* ANIMACIONES */
+    @keyframes title-glow {
+      from {
+        text-shadow: 0 0 20px rgba(157, 78, 221, 0.1);
+      }
+      to {
+        text-shadow: 0 0 45px rgba(157, 78, 221, 0.35), 0 0 10px rgba(0, 245, 212, 0.15);
+      }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- Luces decorativas en segundo plano -->
+  <div class="ambient-glow-1"></div>
+  <div class="ambient-glow-2"></div>
+
+  <!-- Contenedor Principal de Slides -->
+  <main class="slides-container">
+
+    <!-- SLIDE 1: Portada -->
+    <section class="slide active slide-cover" id="slide-1">
+      <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100%;">
+        <div class="slide-tag" style="margin-bottom: 20px;">Lumeria & Learnex</div>
+        <h1>ROADMAP DE INTEGRACIÓN</h1>
+        <p class="subtitle">Estado del Proyecto, Incidencias Críticas y Próximas Mejoras</p>
+        
+        <div class="badge-container">
+          <div class="badge">Vonex Sincronizado</div>
+          <div class="badge">Endpoints Listos</div>
+          <div class="badge">Foco en Calidad</div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 2: Trabajo Realizado (Lumeria & Vonex) -->
+    <section class="slide" id="slide-2">
+      <header class="slide-header">
+        <h2>1. Trabajo Realizado</h2>
+        <span class="slide-tag">Estado Actual</span>
+      </header>
+      <div class="slide-body">
+        <p style="margin-bottom: 20px;">Ambos equipos han avanzado en el despliegue de las capas de infraestructura base:</p>
+        <div class="grid-2">
+          <div class="feature-card">
+            <h3>⚡ Por parte de Lumeria</h3>
+            <p style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main); font-weight: 600;">Servicios de Datos Listos:</p>
+            <ul>
+              <li>Creación y despliegue del endpoint principal para consumir el **Syllabus** completo.</li>
+              <li>Exposición de claves de respuestas correctas y metadatos de las preguntas.</li>
+              <li>Mapeo de correspondencia de **Temas** y **Subtemas** por ítem evaluado.</li>
+            </ul>
+          </div>
+          <div class="feature-card">
+            <h3>🏫 Por parte de Vonex</h3>
+            <p style="font-size: 0.95rem; margin-bottom: 10px; color: var(--text-main); font-weight: 600;">Sincronización Operativa de Usuarios:</p>
+            <ul>
+              <li>Integración y carga automática de la estructura de **Ciclos Académicos**.</li>
+              <li>Mapeo completo de **Aulas / Secciones** dentro del sistema.</li>
+              <li>Base de datos vinculada de **Alumnos** y **Tutores** para la visualización personalizada de reportes.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 3: Coordinaciones e Incidentes Críticos (Bloqueos) -->
+    <section class="slide" id="slide-3">
+      <header class="slide-header">
+        <h2>2. Incidentes Detectados & Coordinaciones</h2>
+        <span class="slide-tag">Riesgos Activos</span>
+      </header>
+      <div class="slide-body">
+        <p style="margin-bottom: 20px;">Se han identificado dos problemas en las pruebas de integración que requieren coordinación inmediata:</p>
+        <div class="grid-2">
+          <div class="feature-card alert-card">
+            <h3>🔑 Claves Incompletas (Parte Actitudinal)</h3>
+            <p style="font-size: 0.95rem; margin-bottom: 10px;">Lumeria **no genera las claves completas** de las evaluaciones debido a que omite los datos de la <strong>parte actitudinal</strong> (evaluación psicopedagógica).</p>
+            <ul>
+              <li style="color: var(--text-muted);"><em>Impacto:</em> Bloquea la calificación automatizada y precisa de las fichas de los alumnos.</li>
+              <li style="color: var(--text-muted);"><em>Solución:</em> Lumeria debe corregir su pipeline de exportación de claves.</li>
+            </ul>
+          </div>
+          <div class="feature-card alert-card">
+            <h3>🏷️ Desajuste de Configuración y Nombres</h3>
+            <p style="font-size: 0.95rem; margin-bottom: 10px;">La configuración de las fichas académicas y sus nombres en el sistema de Lumeria **tienen nombres distintos a los acordados** originalmente.</p>
+            <ul>
+              <li style="color: var(--text-muted);"><em>Impacto:</em> Genera errores de mapeo automático al relacionar exámenes con el syllabus.</li>
+              <li style="color: var(--text-muted);"><em>Solución:</em> Alinear diccionarios de datos o crear un mapa de equivalencias en Vonex.</li>
+            </ul>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 4: Reglas del Negocio y Métricas Principales -->
+    <section class="slide" id="slide-4">
+      <header class="slide-header">
+        <h2>3. Métricas de Rendimiento</h2>
+        <span class="slide-tag">Especificación de Precisión</span>
+      </header>
+      <div class="slide-body">
+        <div class="grid-2">
+          <div class="feature-card">
+            <h3>📈 Tasa de Precisión por Tema (TPT)</h3>
+            <p style="font-size: 0.9rem; line-height: 1.4;">Mide el acierto puro del estudiante, excluyendo las preguntas omitidas (en blanco) para evitar penalizaciones.</p>
+            <div style="background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 8px; font-family: monospace; font-size: 0.8rem; margin: 10px 0; color: var(--accent-green);">
+              TPT = Buenas / (Buenas + Malas)
+            </div>
+            <ul>
+              <li><strong>Tema Seguro:</strong> Precisión $\ge 80\%$.</li>
+              <li><strong>Tema Vulnerable:</strong> Precisión $< 80\%$.</li>
+            </ul>
+          </div>
+          <div class="feature-card">
+            <h3>📑 Precisión por Ficha (TPF)</h3>
+            <p style="font-size: 0.9rem; line-height: 1.4;">Renombramiento formal de <strong>TPH</strong> (Tasa por Hora) a <strong>TPF</strong> para mayor claridad de código y negocio.</p>
+            <div style="background: rgba(0,0,0,0.2); padding: 8px 12px; border-radius: 8px; font-family: monospace; font-size: 0.8rem; margin: 10px 0; color: var(--accent-green);">
+              TPF = Buenas Ficha / Marcadas Ficha
+            </div>
+            <p style="font-size: 0.85rem; color: var(--text-muted);">Mide la exactitud total del alumno en la ficha de la semana (F1, F2, F3).</p>
+          </div>
+          <div class="feature-card" style="grid-column: span 2;">
+            <h3>📊 Índices de Cobertura Temática (ICT)</h3>
+            <p style="font-size: 0.9rem;">Mide la cantidad de temas/subtemas evaluados en exámenes contra la planificación teórica del Syllabus:</p>
+            <p style="font-size: 0.85rem; color: var(--text-muted); margin-top: 5px;">Se calculan 4 ICTs: **ICT Clase Subtemas**, **ICT Clase Temas**, **ICT Acumulado Subtemas** e **ICT Acumulado Temas** (Temas Cerrados / Temas Tratados del Syllabus).</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 5: Simulador Interactivo de Precisión (TPT) -->
+    <section class="slide" id="slide-5">
+      <header class="slide-header">
+        <h2>4. Simulador Interactivo de Precisión (TPT)</h2>
+        <span class="slide-tag">Demostración de Concepto</span>
+      </header>
+      <div class="slide-body">
+        <p style="margin-bottom: 20px;">Prueba en vivo cómo funciona la regla de exclusión de preguntas en blanco y la clasificación de temas:</p>
+        
+        <div class="sim-container">
+          <div class="sim-inputs">
+            <div class="input-group">
+              <label for="correctas">Respuestas Correctas (Buenas)</label>
+              <input type="number" id="correctas" min="0" value="8">
+            </div>
+            <div class="input-group">
+              <label for="incorrectas">Respuestas Incorrectas (Malas)</label>
+              <input type="number" id="incorrectas" min="0" value="2">
+            </div>
+            <div class="input-group">
+              <label for="blancas">Preguntas en Blanco (Blancas)</label>
+              <input type="number" id="blancas" min="0" value="5">
+            </div>
+          </div>
+          
+          <div class="sim-results">
+            <div class="result-metric">
+              <div>
+                <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Preguntas Totales</h4>
+                <p id="total-preguntas" style="font-family: var(--font-title); font-size: 1.4rem; color: var(--text-main); font-weight: 700; margin-top: 5px;">15</p>
+              </div>
+              <div>
+                <h4 style="font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase;">Marcadas</h4>
+                <p id="total-marcadas" style="font-family: var(--font-title); font-size: 1.4rem; color: var(--text-main); font-weight: 700; margin-top: 5px;">10</p>
+              </div>
+            </div>
+            
+            <div class="result-metric" style="border-top: 1px solid rgba(255, 255, 255, 0.05); padding-top: 15px;">
+              <h4 style="font-size: 0.95rem; color: var(--text-muted);">Tasa de Precisión (TPT)</h4>
+              <div class="result-val" id="tpt-val">80.0%</div>
+            </div>
+
+            <div class="result-metric" style="justify-content: flex-end;">
+              <div class="status-pill secure" id="tpt-status">Tema Seguro</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- SLIDE 6: Próximas Mejoras para Learnex -->
+    <section class="slide" id="slide-6">
+      <header class="slide-header">
+        <h2>5. Próximas Mejoras para Learnex</h2>
+        <span class="slide-tag">Backlog del Futuro</span>
+      </header>
+      <div class="slide-body">
+        <p style="margin-bottom: 20px;">Líneas de desarrollo propuestas para expandir el valor del ecosistema Learnex:</p>
+        <div class="grid-3">
+          <div class="feature-card">
+            <h3>🎗️ Concurso de Becas</h3>
+            <p style="font-size: 0.9rem;">Habilitar soporte en la plataforma para calificar, configurar y emitir reportes de exámenes de admisión masivos y concursos de becas institucionales.</p>
+          </div>
+          <div class="feature-card">
+            <h3>🧠 Recomendación para Selección</h3>
+            <p style="font-size: 0.9rem;">Algoritmo que evalúa el rendimiento acumulado de precisión e ICT de los alumnos para sugerir candidatos aptos para ser promovidos a las secciones de <strong>Selección</strong>.</p>
+          </div>
+          <div class="feature-card">
+            <h3>📈 Vista de Dirección Académica</h3>
+            <p style="font-size: 0.9rem;">Panel analítico avanzado que consolida métricas de temas, subtemas y niveles de dificultad de preguntas para acceso compartido del <strong>Director Académico</strong> y <strong>Lumeria</strong>.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+  </main>
+
+  <!-- Barra de navegación inferior -->
+  <footer class="controls-footer">
+    <button class="nav-btn" id="prev-btn" disabled>
+      ← Anterior
+    </button>
+    
+    <div class="progress-track">
+      <div class="progress-bar" id="progress-bar"></div>
+    </div>
+    
+    <div class="slide-number">
+      Slide <span id="current-slide-num">1</span> de <span id="total-slides-num">6</span>
+    </div>
+    
+    <button class="nav-btn" id="next-btn">
+      Siguiente →
+    </button>
+  </footer>
+
+  <script>
+    // LÓGICA DE DIAPOSITIVAS (SLIDES ENGINE)
+    const slides = document.querySelectorAll('.slide');
+    const prevBtn = document.getElementById('prev-btn');
+    const nextBtn = document.getElementById('next-btn');
+    const progressBar = document.getElementById('progress-bar');
+    const currentSlideNum = document.getElementById('current-slide-num');
+    const totalSlidesNum = document.getElementById('total-slides-num');
+    
+    let currentSlide = 0;
+    const totalSlides = slides.length;
+    totalSlidesNum.textContent = totalSlides;
+
+    function updateSlides() {
+      // Activar slide correspondiente
+      slides.forEach((slide, index) => {
+        if (index === currentSlide) {
+          slide.classList.add('active');
+        } else {
+          slide.classList.remove('active');
+        }
+      });
+
+      // Actualizar número y progreso
+      currentSlideNum.textContent = currentSlide + 1;
+      const progressPercent = (currentSlide / (totalSlides - 1)) * 100;
+      progressBar.style.width = `${progressPercent}%`;
+
+      // Habilitar / deshabilitar botones
+      prevBtn.disabled = currentSlide === 0;
+      nextBtn.disabled = currentSlide === totalSlides - 1;
+    }
+
+    prevBtn.addEventListener('click', () => {
+      if (currentSlide > 0) {
+        currentSlide--;
+        updateSlides();
+      }
+    });
+
+    nextBtn.addEventListener('click', () => {
+      if (currentSlide < totalSlides - 1) {
+        currentSlide++;
+        updateSlides();
+      }
+    });
+
+    // Soporte para teclas direccionales
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'ArrowRight' || e.key === 'Space') {
+        if (currentSlide < totalSlides - 1) {
+          currentSlide++;
+          updateSlides();
+        }
+      } else if (e.key === 'ArrowLeft') {
+        if (currentSlide > 0) {
+          currentSlide--;
+          updateSlides();
+        }
+      }
+    });
+
+    // LÓGICA DEL SIMULADOR INTERACTIVO (SLIDE 5)
+    const inputCorrectas = document.getElementById('correctas');
+    const inputIncorrectas = document.getElementById('incorrectas');
+    const inputBlancas = document.getElementById('blancas');
+
+    const txtTotalPreguntas = document.getElementById('total-preguntas');
+    const txtTotalMarcadas = document.getElementById('total-marcadas');
+    const txtTptVal = document.getElementById('tpt-val');
+    const txtTptStatus = document.getElementById('tpt-status');
+
+    function calcularSimulador() {
+      const correctas = Math.max(0, parseInt(inputCorrectas.value) || 0);
+      const incorrectas = Math.max(0, parseInt(inputIncorrectas.value) || 0);
+      const blancas = Math.max(0, parseInt(inputBlancas.value) || 0);
+
+      // Totales
+      const totalMarcadas = correctas + incorrectas;
+      const totalPreguntas = totalMarcadas + blancas;
+
+      // Calcular TPT
+      let tpt = 0;
+      if (totalMarcadas > 0) {
+        tpt = (correctas / totalMarcadas) * 100;
+      }
+
+      // Renderizar valores
+      txtTotalPreguntas.textContent = totalPreguntas;
+      txtTotalMarcadas.textContent = totalMarcadas;
+      txtTptVal.textContent = `${tpt.toFixed(1)}%`;
+
+      // Semaforización (Semaforo >= 80% es seguro, < 80% es vulnerable)
+      if (tpt >= 80) {
+        txtTptStatus.textContent = "Tema Seguro";
+        txtTptStatus.className = "status-pill secure";
+        txtTptVal.style.color = "var(--accent-green)";
+      } else {
+        txtTptStatus.textContent = "Tema Vulnerable";
+        txtTptStatus.className = "status-pill vulnerable";
+        txtTptVal.style.color = "var(--accent-red)";
+      }
+    }
+
+    [inputCorrectas, inputIncorrectas, inputBlancas].forEach(input => {
+      input.addEventListener('input', calcularSimulador);
+    });
+
+    // Inicializar slide y simulador
+    updateSlides();
+    calcularSimulador();
+  </script>
+</body>
+</html>

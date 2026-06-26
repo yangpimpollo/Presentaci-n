@@ -1,0 +1,13 @@
+# Notas internas y planificación (no van al sitio público)
+Test/
+.agents/
+skills-lock.json
+
+# Sistema operativo
+Thumbs.db
+.DS_Store
+
+# Editores
+.vscode/
+.idea/
+*.swp
